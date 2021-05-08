@@ -16,7 +16,6 @@
 using namespace std;
 
 typedef vector<vector<float>> Audio;
-typedef vector<vector<complex<float>>> ComplexAudio;
 
 class FifoBuffer
 {
@@ -29,12 +28,29 @@ public:
     bool empty();
     unsigned size();
     bool full();
-    void write(const Audio& data, unsigned nSamplesToWrite, unsigned nSamplesToOverlap=0);
-    void write(vector<const float*> data, unsigned nSamplesToWrite, unsigned nSamplesToOverlap=0);
-    void write(const ComplexAudio& data, unsigned nSamplesToWrite, unsigned nSamplesToOverlap=0);
+    template <typename T>
+    void write(T data, unsigned nSamplesToWrite, unsigned nSamplesToOverlap=0);
+    template <typename T>
+    void read(T data, unsigned nSamplesToRead, unsigned nSamplesToClear);
+    /*template <typename T>
+    void read(T data, unsigned nSamplesToRead, unsigned nSamplesToClear)
+    {
+        assert(size() >= nSamplesToRead);
+        assert(nSamplesToRead >= nSamplesToClear);
+        for (int channel = 0; channel < buffer.size(); channel++)
+        {
+            int  t = tail;
+            for (int sample = 0; sample < nSamplesToRead; ++sample)
+            {
+                data[channel][sample] = buffer[channel][t++];
+                t &= mask;
+            }
+        }
+        tail += nSamplesToClear;
+        tail &= mask;
+    }*/
     void read(Audio& data, unsigned nSamplesToRead, unsigned nSamplesToClear);
-    void read(vector<float*> data, unsigned nSamplesToRead, unsigned nSamplesToClear);
-    void read(ComplexAudio& data, unsigned nSamplesToRead, unsigned nSamplesToClear);
+    
     void addSilence(unsigned nSamples);
 private:
     Audio buffer;

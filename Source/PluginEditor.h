@@ -28,6 +28,9 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     AmbiReverbAudioProcessor& audioProcessor;
-
+    void selectImpulseResponse();
+    juce::TextButton fileButton;
+    juce::FileChooser fileChooser;
+    juce::AudioFormatManager formatManager;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbiReverbAudioProcessorEditor)
 };

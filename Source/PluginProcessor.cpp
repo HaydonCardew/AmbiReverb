@@ -8,9 +8,8 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include <vector>
 
-#define BLOCK_SIZE 2048//16384 //2048
+#define BLOCK_SIZE 2048 //16384
 
 //==============================================================================
 AmbiReverbAudioProcessor::AmbiReverbAudioProcessor()
@@ -22,29 +21,13 @@ AmbiReverbAudioProcessor::AmbiReverbAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       ), processBlockSize(BLOCK_SIZE), overlapBuffer(2, OverlapBuffer(BLOCK_SIZE, 0.5)), window(BLOCK_SIZE, WindowType::hann), blockProcessed(false), fftSize(BLOCK_SIZE), fft(11)
+                       ), processBlockSize(BLOCK_SIZE)
 #endif
 {
     transferBuffer.resize(2, vector<float>(processBlockSize));
     inputBuffer.resize(2, processBlockSize * 2);
     outputBuffer.resize(2, processBlockSize * 2);
-    outputBuffer.addSilence(processBlockSize/2);
-    fftData.resize(processBlockSize);
-    transferData.resize(processBlockSize);
-    shitFilter.resize(processBlockSize);
-    int cutoff = (processBlockSize*0.9);
-    for (int i = 0; i < processBlockSize; ++i)
-    {
-        if (i < cutoff)
-        {
-            shitFilter[i] = 0;
-        }
-        else
-        {
-            shitFilter[i] = 1;
-        }
-    }
-    assert(fftData.size() >= fft.getSize());
+    convolution.setNumberOfChannels(2);
 }
 
 AmbiReverbAudioProcessor::~AmbiReverbAudioProcessor()
@@ -116,8 +99,7 @@ void AmbiReverbAudioProcessor::changeProgramName (int index, const juce::String&
 //==============================================================================
 void AmbiReverbAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    convolution.prepare(sampleRate, processBlockSize);
 }
 
 void AmbiReverbAudioProcessor::releaseResources()
@@ -160,68 +142,23 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
-
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    /*for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        auto* channelData = buffer.getWritePointer (channel);
-        
-        // ..do something to the data...
-    }*/
+        buffer.clear (i, 0, buffer.getNumSamples());
+    }
+
     inputBuffer.write(vector<const float*>({buffer.getReadPointer(0), buffer.getReadPointer(1)}), buffer.getNumSamples());
     
     if (inputBuffer.size() >= processBlockSize)
     {
-        inputBuffer.read(transferBuffer, processBlockSize, processBlockSize/2);
+        inputBuffer.read(transferBuffer, processBlockSize, processBlockSize);
         
-        for ( int channel = 0; channel < 2; ++channel)
-        {
-            for (int sample = 0; sample < processBlockSize; ++sample)
-            {
-                //transferBuffer[channel][sample] = 0.0;
-            }
-            window.multiplyWithWindowingTable(transferBuffer[channel].data(), processBlockSize);
-            for (int sample = 0; sample < processBlockSize; ++sample)
-            {
-                transferData[sample] = transferBuffer[channel][sample];
-                //transferData[sample] = 0;
-                fftData[sample] = 0;
-            }
-            fft.perform(transferData.data(), fftData.data(), false);
-            // process here
-            for (int sample = 0; sample < processBlockSize; ++sample)
-            {
-                fftData[sample] *= shitFilter[sample]; // needs to be the magnitudes multiplied...
-                //fftData[sample].real(0);
-                //fftData[sample].imag(0);
-                //transferData[sample].real(0);
-                //transferData[sample].imag(0);
-            }
-            fft.perform(fftData.data(), transferData.data(), true);
-            for (int sample = 0; sample < processBlockSize; ++sample)
-            {
-                transferBuffer[channel][sample] = transferData[sample].real() / 2; // overlap will double this...
-            }
-        }
-        outputBuffer.write(transferBuffer, processBlockSize, processBlockSize/2); // prefill output buffer
-        blockProcessed = true;
+        convolution.process(transferBuffer, processBlockSize);
+        
+        outputBuffer.write(transferBuffer, processBlockSize);
     }
     
-    if (outputBuffer.size() >= buffer.getNumSamples() && blockProcessed)
+    if (outputBuffer.size() >= buffer.getNumSamples())
     {
         outputBuffer.read(vector<float*>({buffer.getWritePointer(0), buffer.getWritePointer(1)}), buffer.getNumSamples(), buffer.getNumSamples());
     }

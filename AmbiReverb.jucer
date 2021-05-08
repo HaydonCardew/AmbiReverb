@@ -4,9 +4,8 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="ajl4SI" name="AmbiReverb">
     <GROUP id="{B1A4D31E-1D19-C0CA-5592-5F01F6CD0182}" name="Source">
-      <FILE id="UNItgc" name="OverlapBuffer.cpp" compile="1" resource="0"
-            file="Source/OverlapBuffer.cpp"/>
-      <FILE id="p8dszh" name="OverlapBuffer.h" compile="0" resource="0" file="Source/OverlapBuffer.h"/>
+      <FILE id="RknD8T" name="Convolution.cpp" compile="1" resource="0" file="Source/Convolution.cpp"/>
+      <FILE id="ra7nY2" name="Convolution.h" compile="0" resource="0" file="Source/Convolution.h"/>
       <FILE id="dul5Wa" name="FifoBuffer.cpp" compile="1" resource="0" file="Source/FifoBuffer.cpp"/>
       <FILE id="cjEgdw" name="FifoBuffer.h" compile="0" resource="0" file="Source/FifoBuffer.h"/>
       <FILE id="L5g0vg" name="PluginProcessor.cpp" compile="1" resource="0"

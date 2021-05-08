@@ -10,7 +10,7 @@
 
 #include <JuceHeader.h>
 #include "FifoBuffer.h"
-#include "OverlapBuffer.h"
+#include "Convolution.h"
 
 //==============================================================================
 /**
@@ -57,17 +57,8 @@ public:
     
     FifoBuffer inputBuffer, outputBuffer;
     vector<vector<float>> transferBuffer;
-    vector<OverlapBuffer> overlapBuffer;
-    bool blockProcessed;
     const int processBlockSize;
-    using WindowType = typename juce::dsp::WindowingFunction<float>::WindowingMethod;
-    using WindowFunction = typename juce::dsp::WindowingFunction<float>;
-    WindowFunction window;
-    juce::dsp::FFT fft;
-    unsigned fftOrder = 11;//14; // this controls fftSize and windowLength ~13 for MSc setting
-    unsigned fftSize;
-    vector<juce::dsp::Complex<float>> fftData, transferData;
-    vector<float> shitFilter;
+    MultiChannelConvolution convolution;
     
 private:
     //==============================================================================
