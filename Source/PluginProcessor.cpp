@@ -10,6 +10,8 @@
 #include "PluginEditor.h"
 
 #define BLOCK_SIZE 2048 //16384
+#define NUM_IR_CHANNELS 2
+#define NUM_IR_SAMPLES 10*48000
 
 //==============================================================================
 AmbiReverbAudioProcessor::AmbiReverbAudioProcessor()
@@ -28,6 +30,8 @@ AmbiReverbAudioProcessor::AmbiReverbAudioProcessor()
     inputBuffer.resize(2, processBlockSize * 2);
     outputBuffer.resize(2, processBlockSize * 2);
     convolution.setNumberOfChannels(2);
+    impulseResponse.resize(NUM_IR_CHANNELS, vector<float>(NUM_IR_SAMPLES));
+    //convolution.prepare(getSampleRate(), processBlockSize);
 }
 
 AmbiReverbAudioProcessor::~AmbiReverbAudioProcessor()
@@ -133,6 +137,20 @@ bool AmbiReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
   #endif
 }
 #endif
+
+void AmbiReverbAudioProcessor::loadImpulseResponse(juce::AudioFormatReader* reader)
+{
+    assert(impulseResponse.size() == reader->numChannels);
+    assert(impulseResponse[0].size() >= reader->lengthInSamples);
+    vector<float*> ptrs(impulseResponse.size());
+    for (int i = 0; i < impulseResponse.size(); ++i)
+    {
+        ptrs[i] = impulseResponse[i].data();
+    }
+    float * const * p = &ptrs[0];//ptrs[0]
+    reader->read(p, ptrs.size(), 0, impulseResponse[0].size());
+    convolution.loadImpulseResponse(impulseResponse, reader->sampleRate, false);
+}
 
 void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {

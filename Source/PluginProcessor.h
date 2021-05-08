@@ -54,13 +54,15 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+
+    vector<vector<float>> impulseResponse;
+    void loadImpulseResponse(juce::AudioFormatReader* reader);
+private:
     
     FifoBuffer inputBuffer, outputBuffer;
     vector<vector<float>> transferBuffer;
     const int processBlockSize;
     MultiChannelConvolution convolution;
-    
-private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbiReverbAudioProcessor)
 };

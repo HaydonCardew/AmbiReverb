@@ -13,6 +13,7 @@
 #include <vector>
 
 using namespace std;
+using namespace juce;
 using namespace juce::dsp;
 
 class MultiChannelConvolution
@@ -21,6 +22,7 @@ public:
     MultiChannelConvolution();
     void setNumberOfChannels(unsigned nChannels);
     void prepare(double sampleRate, unsigned int maximumBlcoksize);
+    void loadImpulseResponse(vector<vector<float>>& audio, double sampleRate, bool normalise);
     void process(vector<vector<float>>& audio, const unsigned nSamples);
     void reset();
 private:

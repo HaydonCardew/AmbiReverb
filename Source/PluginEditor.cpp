@@ -28,9 +28,11 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
                     //dataModel.setSampleReader (std::unique_ptr<AudioFormatReaderFactory> (readerFactory), &undoManager);
                     juce::AudioFormatReader* reader = formatManager.createReaderFor(result);
                     int nChans = reader->numChannels;
-                    long length = reader->lengthInSamples;
+                    int64 length = reader->lengthInSamples;
                     int fs = reader->sampleRate;
-                    
+                    //bool read (float* const* destChannels, int numDestChannels, int64 startSampleInSource, int numSamplesToRead);
+                    //reader->read(&audioProcessor.impulseResponse, 0, length, 0, true, true);
+                    audioProcessor.loadImpulseResponse(reader);
                 }
             };
     fileButton.onClick = [this, setReader]
