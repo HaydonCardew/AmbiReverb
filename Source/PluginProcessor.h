@@ -15,6 +15,38 @@
 //==============================================================================
 /**
 */
+
+using namespace juce;
+
+class BufferTransfer
+{
+public:
+    void set (BufferWithSampleRate&& p)
+    {
+        const SpinLock::ScopedLockType lock (mutex);
+        buffer = std::move (p);
+        newBuffer = true;
+    }
+
+    // Call `fn` passing the new buffer, if there's one available
+    template <typename Fn>
+    void get (Fn&& fn)
+    {
+        const SpinLock::ScopedTryLockType lock (mutex);
+
+        if (lock.isLocked() && newBuffer)
+        {
+            fn (buffer);
+            newBuffer = false;
+        }
+    }
+
+private:
+    BufferWithSampleRate buffer;
+    bool newBuffer = false;
+    SpinLock mutex;
+};
+
 class AmbiReverbAudioProcessor  : public juce::AudioProcessor
 {
 public:
@@ -55,7 +87,7 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    vector<vector<float>> impulseResponse;
+    //vector<vector<float>> impulseResponse;
     void loadImpulseResponse(juce::AudioFormatReader* reader);
 private:
     
@@ -63,6 +95,9 @@ private:
     vector<vector<float>> transferBuffer;
     const int processBlockSize;
     MultiChannelConvolution convolution;
+    BufferTransfer bufferTransfer;
+    //void convertImpulseToFloat();
+    //juce::AudioBuffer<float> impulseResponse;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbiReverbAudioProcessor)
 };

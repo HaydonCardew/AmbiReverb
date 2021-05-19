@@ -17,7 +17,15 @@ MultiChannelConvolution::MultiChannelConvolution()
 
 void MultiChannelConvolution::setNumberOfChannels(unsigned nChannels)
 {
-    convolution.resize(nChannels, make_shared<Convolution>());
+    Convolution::NonUniform headSize;
+    headSize.headSizeInSamples = 1024;
+    convolution.clear();
+    //convolution.resize(nChannels); & =?
+    for (int i = 0; i < nChannels; ++i)
+    {
+        convolution.push_back(make_shared<Convolution>(headSize));
+    }
+    //gain.resize(nChannels, make_shared<Gain<float>>());
 }
 
 void MultiChannelConvolution::prepare(double sampleRate, unsigned int maximumBlocksize)
@@ -39,32 +47,29 @@ void MultiChannelConvolution::reset()
     }
 }
 
-void MultiChannelConvolution::loadImpulseResponse(vector<vector<float>>& audio, double sampleRate, bool normalise)
+void MultiChannelConvolution::loadImpulseResponse(BufferWithSampleRate& audio, bool normalise)
 {
-    //void loadImpulseResponse (AudioBuffer<float>&& buffer, double bufferSampleRate, Stereo isStereo, Trim requiresTrimming, Normalise requiresNormalisation);
-    assert(audio.size() == convolution.size());
+    // i think the issue is here...
+    assert(audio.getNumChannels() == convolution.size());
     Convolution::Normalise norm = normalise ? Convolution::Normalise::yes : Convolution::Normalise::no;
+    float** ptrs = audio.getArrayOfWritePointers();
     for ( int i = 0; i < convolution.size(); ++i)
     {
-        enum class Stereo    { no, yes };
-        enum class Trim      { no, yes };
-        enum class Normalise { no, yes };
-        //void loadImpulseResponse (const void* sourceData, size_t sourceDataSize, Stereo isStereo, Trim requiresTrimming, size_t size, Normalise requiresNormalisation = Normalise::yes);
-        size_t size = sizeof(float) * audio[0].size();
-        convolution[i]->loadImpulseResponse(audio[i].data(), size, Convolution::Stereo::no, Convolution::Trim::no, size, norm);
+        convolution[i]->loadImpulseResponse(AudioBuffer<float>(ptrs + i, 1, 0, audio.getNumSamples()), audio.getSampleRate(), Convolution::Stereo::no, Convolution::Trim::yes, norm);// trim needed?
     }
 }
 
 void MultiChannelConvolution::process(vector<vector<float>>& audio, const unsigned nSamples)
 {
     assert(audio.size() == convolution.size());
-    assert(nSamples <= processSpec.maximumBlockSize);
-    assert(audio[0].size() >= nSamples);
-    
+    assert(nSamples == processSpec.maximumBlockSize);
+    assert(audio[0].size() == nSamples);
+
     for ( int i = 0; i < audio.size(); ++i)
     {
         float* const ptr = audio[i].data();
         AudioBlock<float> block (&ptr, 1, nSamples);
-        convolution[i]->process(ProcessContextReplacing<float>(block));
+        ProcessContextReplacing<float> context(block);
+        convolution[i]->process(context);
     }
 }

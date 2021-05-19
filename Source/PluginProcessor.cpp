@@ -30,7 +30,7 @@ AmbiReverbAudioProcessor::AmbiReverbAudioProcessor()
     inputBuffer.resize(2, processBlockSize * 2);
     outputBuffer.resize(2, processBlockSize * 2);
     convolution.setNumberOfChannels(2);
-    impulseResponse.resize(NUM_IR_CHANNELS, vector<float>(NUM_IR_SAMPLES));
+    //impulseResponse.resize(NUM_IR_CHANNELS, vector<float>(NUM_IR_SAMPLES));
     //convolution.prepare(getSampleRate(), processBlockSize);
 }
 
@@ -103,6 +103,7 @@ void AmbiReverbAudioProcessor::changeProgramName (int index, const juce::String&
 //==============================================================================
 void AmbiReverbAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    convolution.reset();
     convolution.prepare(sampleRate, processBlockSize);
 }
 
@@ -140,16 +141,12 @@ bool AmbiReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
 
 void AmbiReverbAudioProcessor::loadImpulseResponse(juce::AudioFormatReader* reader)
 {
-    assert(impulseResponse.size() == reader->numChannels);
-    assert(impulseResponse[0].size() >= reader->lengthInSamples);
-    vector<float*> ptrs(impulseResponse.size());
-    for (int i = 0; i < impulseResponse.size(); ++i)
-    {
-        ptrs[i] = impulseResponse[i].data();
-    }
-    float * const * p = &ptrs[0];//ptrs[0]
-    reader->read(p, ptrs.size(), 0, impulseResponse[0].size());
-    convolution.loadImpulseResponse(impulseResponse, reader->sampleRate, false);
+    const unsigned numChannels = reader->numChannels;
+    const long numSamples = reader->lengthInSamples;
+    AudioBuffer<float> impulseResponse(reader->numChannels, (int)numSamples);
+    impulseResponse.clear(); // make sure memory in buffer is set to zero
+    reader->read(&impulseResponse, 0, (int)numSamples, 0, true, true);
+    bufferTransfer.set(BufferWithSampleRate{std::move(impulseResponse), reader->sampleRate});
 }
 
 void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
@@ -166,6 +163,15 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     }
 
     inputBuffer.write(vector<const float*>({buffer.getReadPointer(0), buffer.getReadPointer(1)}), buffer.getNumSamples());
+    
+    for (auto i = 0; i < totalNumOutputChannels; ++i)
+    {
+        buffer.clear (i, 0, buffer.getNumSamples());
+    }
+    bufferTransfer.get ([this] (BufferWithSampleRate& ir)
+    {
+            convolution.loadImpulseResponse(ir, false); // must be this?
+    });
     
     if (inputBuffer.size() >= processBlockSize)
     {
