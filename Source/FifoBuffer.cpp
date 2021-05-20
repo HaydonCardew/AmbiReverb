@@ -49,7 +49,8 @@ void FifoBuffer::write(T data, unsigned nSamplesToWrite, unsigned nSamplesToOver
     head &= mask;
 }
 template void FifoBuffer::write<const Audio&>(const Audio&, unsigned, unsigned);
-template void FifoBuffer::write<vector<const float*>>(vector<const float*>, unsigned, unsigned);
+template void FifoBuffer::write<const float**>(const float**, unsigned, unsigned);
+//template void FifoBuffer::write<vector<const float*>>(vector<const float*>, unsigned, unsigned);
 
 template <typename T>
 void FifoBuffer::read(T data, unsigned nSamplesToRead, unsigned nSamplesToClear)
@@ -69,6 +70,7 @@ void FifoBuffer::read(T data, unsigned nSamplesToRead, unsigned nSamplesToClear)
     tail &= mask;
 }
 template void FifoBuffer::read<vector<float*>>(vector<float*>, unsigned, unsigned);
+template void FifoBuffer::read<float**>(float**, unsigned, unsigned);
 //template void FifoBuffer::read< Audio & >(Audio &, unsigned, unsigned);
 
 //template void FifoBuffer::read<vector<vector<float>>&>(vector<vector<float>>&, unsigned, unsigned);

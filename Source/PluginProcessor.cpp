@@ -161,8 +161,9 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     {
         buffer.clear (i, 0, buffer.getNumSamples());
     }
-
-    inputBuffer.write(vector<const float*>({buffer.getReadPointer(0), buffer.getReadPointer(1)}), buffer.getNumSamples());
+    // should work for array of pointers..
+    //inputBuffer.write(vector<const float*>({buffer.getReadPointer(0), buffer.getReadPointer(1)}), buffer.getNumSamples());
+    inputBuffer.write(buffer.getArrayOfReadPointers(), buffer.getNumSamples());
     
     for (auto i = 0; i < totalNumOutputChannels; ++i)
     {
@@ -184,7 +185,7 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     
     if (outputBuffer.size() >= buffer.getNumSamples())
     {
-        outputBuffer.read(vector<float*>({buffer.getWritePointer(0), buffer.getWritePointer(1)}), buffer.getNumSamples(), buffer.getNumSamples());
+        outputBuffer.read(buffer.getArrayOfWritePointers(), buffer.getNumSamples(), buffer.getNumSamples());
     }
 }
 

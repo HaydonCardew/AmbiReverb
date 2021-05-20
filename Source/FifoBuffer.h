@@ -32,23 +32,6 @@ public:
     void write(T data, unsigned nSamplesToWrite, unsigned nSamplesToOverlap=0);
     template <typename T>
     void read(T data, unsigned nSamplesToRead, unsigned nSamplesToClear);
-    /*template <typename T>
-    void read(T data, unsigned nSamplesToRead, unsigned nSamplesToClear)
-    {
-        assert(size() >= nSamplesToRead);
-        assert(nSamplesToRead >= nSamplesToClear);
-        for (int channel = 0; channel < buffer.size(); channel++)
-        {
-            int  t = tail;
-            for (int sample = 0; sample < nSamplesToRead; ++sample)
-            {
-                data[channel][sample] = buffer[channel][t++];
-                t &= mask;
-            }
-        }
-        tail += nSamplesToClear;
-        tail &= mask;
-    }*/
     void read(Audio& data, unsigned nSamplesToRead, unsigned nSamplesToClear);
     
     void addSilence(unsigned nSamples);
