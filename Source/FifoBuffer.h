@@ -28,11 +28,11 @@ public:
     bool empty();
     unsigned size();
     bool full();
-    template <typename T>
-    void write(T data, unsigned nSamplesToWrite, unsigned nSamplesToOverlap=0);
-    template <typename T>
-    void read(T data, unsigned nSamplesToRead, unsigned nSamplesToClear);
+    void write(const Audio& data, unsigned nSamplesToWrite, unsigned nSamplesToOverlap=0);
+    void write(const float** data, unsigned nSamplesToWrite, unsigned nSamplesToOverlap=0);
+    
     void read(Audio& data, unsigned nSamplesToRead, unsigned nSamplesToClear);
+    void read(float** data, unsigned nSamplesToRead, unsigned nSamplesToClear);
     
     void addSilence(unsigned nSamples);
 private:

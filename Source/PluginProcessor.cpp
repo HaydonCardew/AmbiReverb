@@ -27,6 +27,7 @@ AmbiReverbAudioProcessor::AmbiReverbAudioProcessor()
 #endif
 {
     transferBuffer.resize(2, vector<float>(processBlockSize));
+    
     inputBuffer.resize(2, processBlockSize * 2);
     outputBuffer.resize(2, processBlockSize * 2);
     convolution.setNumberOfChannels(2);
