@@ -15,7 +15,7 @@
 class AmbisonicBuffer : public FifoBuffer
 {
 public:
-    //AmbisonicBuffer(unsigned order, unsigned size);
+    AmbisonicBuffer(unsigned order, unsigned size);
     //void readBFormat(Audio& data, unsigned nSamplesToRead, unsigned nSamplesToClear);
     //void writeBFormat();
     // void read(Audio& data, unsigned nSamplesToRead, unsigned nSamplesToClear);

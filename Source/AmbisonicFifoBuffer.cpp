@@ -9,7 +9,10 @@
 */
 
 #include "AmbisonicFifoBuffer.h"
-/*
+
 AmbisonicBuffer::AmbisonicBuffer(unsigned order, unsigned size) : FifoBuffer(pow(order+1, 2), size)
-{}
-*/
+{
+    assert(order == 1); // do the simple things first...
+}
+
+

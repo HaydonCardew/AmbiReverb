@@ -8,10 +8,10 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "AmbisonicTools.cpp"
 
 #define BLOCK_SIZE 2048 //16384
-#define NUM_IR_CHANNELS 2
-#define NUM_IR_SAMPLES 10*48000
+#define NUM_CHANNELS 4
 
 //==============================================================================
 AmbiReverbAudioProcessor::AmbiReverbAudioProcessor()
@@ -26,11 +26,11 @@ AmbiReverbAudioProcessor::AmbiReverbAudioProcessor()
                        ), processBlockSize(BLOCK_SIZE)
 #endif
 {
-    transferBuffer.resize(2, vector<float>(processBlockSize));
+    transferBuffer.resize(NUM_CHANNELS, vector<float>(processBlockSize));
     
-    inputBuffer.resize(2, processBlockSize * 2);
-    outputBuffer.resize(2, processBlockSize * 2);
-    convolution.setNumberOfChannels(2);
+    inputBuffer.resize(NUM_CHANNELS, processBlockSize * 2);
+    outputBuffer.resize(NUM_CHANNELS, processBlockSize * 2);
+    convolution.setNumberOfChannels(NUM_CHANNELS);
     //impulseResponse.resize(NUM_IR_CHANNELS, vector<float>(NUM_IR_SAMPLES));
     //convolution.prepare(getSampleRate(), processBlockSize);
 }
@@ -125,10 +125,10 @@ bool AmbiReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
     // In this template code we only support mono or stereo.
     // Some plugin hosts, such as certain GarageBand versions, will only
     // load plugins that support stereo bus layouts.
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
-        return false;
-
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::ambisonic(1))
+    {
+        //return false;
+    }
     // This checks if the input layout matches the output layout
    #if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
@@ -143,6 +143,7 @@ bool AmbiReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
 void AmbiReverbAudioProcessor::loadImpulseResponse(juce::AudioFormatReader* reader)
 {
     const unsigned numChannels = reader->numChannels;
+    assert(NUM_CHANNELS == numChannels);
     const long numSamples = reader->lengthInSamples;
     AudioBuffer<float> impulseResponse(reader->numChannels, (int)numSamples);
     impulseResponse.clear(); // make sure memory in buffer is set to zero
@@ -164,12 +165,10 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     }
     // should work for array of pointers..
     //inputBuffer.write(vector<const float*>({buffer.getReadPointer(0), buffer.getReadPointer(1)}), buffer.getNumSamples());
+    assert(totalNumInputChannels == NUM_CHANNELS);
+    assert(totalNumOutputChannels == NUM_CHANNELS);
     inputBuffer.write(buffer.getArrayOfReadPointers(), buffer.getNumSamples());
     
-    for (auto i = 0; i < totalNumOutputChannels; ++i)
-    {
-        buffer.clear (i, 0, buffer.getNumSamples());
-    }
     bufferTransfer.get ([this] (BufferWithSampleRate& ir)
     {
             convolution.loadImpulseResponse(ir, false); // must be this?
@@ -178,9 +177,9 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     if (inputBuffer.size() >= processBlockSize)
     {
         inputBuffer.read(transferBuffer, processBlockSize, processBlockSize);
-        
+        Ambisonic::BformatToPformat(transferBuffer, processBlockSize, 1);
         convolution.process(transferBuffer, processBlockSize);
-        
+        Ambisonic::PformatToBformat(transferBuffer, processBlockSize, 1);
         outputBuffer.write(transferBuffer, processBlockSize);
     }
     
