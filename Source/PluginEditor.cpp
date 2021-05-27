@@ -26,7 +26,7 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
                 {
                     //auto readerFactory = new juce::FileAudioFormatReaderFactory (result);
                     //dataModel.setSampleReader (std::unique_ptr<AudioFormatReaderFactory> (readerFactory), &undoManager);
-                    juce::AudioFormatReader* reader = formatManager.createReaderFor(result);
+                    juce::AudioFormatReader* reader = formatManager.createReaderFor(result); // this leaks
                     int nChans = reader->numChannels;
                     int64 length = reader->lengthInSamples;
                     int fs = reader->sampleRate;

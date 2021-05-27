@@ -177,9 +177,9 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     if (inputBuffer.size() >= processBlockSize)
     {
         inputBuffer.read(transferBuffer, processBlockSize, processBlockSize);
-        Ambisonic::BformatToPformat(transferBuffer, processBlockSize, 1);
+        Ambisonic::BformatToPformat(transferBuffer, processBlockSize, 1, Ambisonic::Format::ACN);
         convolution.process(transferBuffer, processBlockSize);
-        Ambisonic::PformatToBformat(transferBuffer, processBlockSize, 1);
+        Ambisonic::PformatToBformat(transferBuffer, processBlockSize, 1, Ambisonic::Format::ACN);
         outputBuffer.write(transferBuffer, processBlockSize);
     }
     

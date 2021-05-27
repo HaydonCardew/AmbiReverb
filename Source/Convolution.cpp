@@ -20,12 +20,10 @@ void MultiChannelConvolution::setNumberOfChannels(unsigned nChannels)
     Convolution::NonUniform headSize;
     headSize.headSizeInSamples = 1024;
     convolution.clear();
-    //convolution.resize(nChannels); & =?
     for (int i = 0; i < nChannels; ++i)
     {
         convolution.push_back(make_shared<Convolution>(headSize));
     }
-    //gain.resize(nChannels, make_shared<Gain<float>>());
 }
 
 void MultiChannelConvolution::prepare(double sampleRate, unsigned int maximumBlocksize)
