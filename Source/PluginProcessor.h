@@ -91,7 +91,8 @@ public:
 private:
     
     FifoBuffer inputBuffer, outputBuffer;
-    vector<vector<float>> transferBuffer;
+    AudioChunk bFormatChunk, pFormatChunk;
+    
     const int processBlockSize;
     MultiChannelConvolution convolution;
     BufferTransfer bufferTransfer;

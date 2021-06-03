@@ -14,5 +14,3 @@ AmbisonicBuffer::AmbisonicBuffer(unsigned order, unsigned size) : FifoBuffer(pow
 {
     assert(order == 1); // do the simple things first...
 }
-
-

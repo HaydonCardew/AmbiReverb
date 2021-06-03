@@ -11,7 +11,8 @@
 #include "AmbisonicTools.cpp"
 
 #define BLOCK_SIZE 2048 //16384
-#define NUM_CHANNELS 4
+#define NUM_BFORMAT_CHANNELS 4
+#define NUM_PFORMAT_CHANNELS 4
 
 //==============================================================================
 AmbiReverbAudioProcessor::AmbiReverbAudioProcessor()
@@ -26,11 +27,12 @@ AmbiReverbAudioProcessor::AmbiReverbAudioProcessor()
                        ), processBlockSize(BLOCK_SIZE)
 #endif
 {
-    transferBuffer.resize(NUM_CHANNELS, vector<float>(processBlockSize));
+    bFormatChunk.resize(NUM_BFORMAT_CHANNELS, vector<float>(processBlockSize));
+    pFormatChunk.resize(NUM_PFORMAT_CHANNELS, vector<float>(processBlockSize));
     
-    inputBuffer.resize(NUM_CHANNELS, processBlockSize * 2);
-    outputBuffer.resize(NUM_CHANNELS, processBlockSize * 2);
-    convolution.setNumberOfChannels(NUM_CHANNELS);
+    inputBuffer.resize(NUM_BFORMAT_CHANNELS, processBlockSize * 2);
+    outputBuffer.resize(NUM_BFORMAT_CHANNELS, processBlockSize * 2);
+    convolution.setNumberOfChannels(NUM_PFORMAT_CHANNELS);
     //impulseResponse.resize(NUM_IR_CHANNELS, vector<float>(NUM_IR_SAMPLES));
     //convolution.prepare(getSampleRate(), processBlockSize);
 }
@@ -143,7 +145,7 @@ bool AmbiReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
 void AmbiReverbAudioProcessor::loadImpulseResponse(juce::AudioFormatReader* reader)
 {
     const unsigned numChannels = reader->numChannels;
-    assert(NUM_CHANNELS == numChannels);
+    assert(NUM_PFORMAT_CHANNELS == numChannels);
     const long numSamples = reader->lengthInSamples;
     AudioBuffer<float> impulseResponse(reader->numChannels, (int)numSamples);
     impulseResponse.clear(); // make sure memory in buffer is set to zero
@@ -165,8 +167,8 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     }
     // should work for array of pointers..
     //inputBuffer.write(vector<const float*>({buffer.getReadPointer(0), buffer.getReadPointer(1)}), buffer.getNumSamples());
-    assert(totalNumInputChannels == NUM_CHANNELS);
-    assert(totalNumOutputChannels == NUM_CHANNELS);
+    assert(totalNumInputChannels == NUM_BFORMAT_CHANNELS);
+    assert(totalNumOutputChannels == NUM_BFORMAT_CHANNELS);
     inputBuffer.write(buffer.getArrayOfReadPointers(), buffer.getNumSamples());
     
     bufferTransfer.get ([this] (BufferWithSampleRate& ir)
@@ -176,11 +178,21 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     
     if (inputBuffer.size() >= processBlockSize)
     {
-        inputBuffer.read(transferBuffer, processBlockSize, processBlockSize);
-        Ambisonic::BformatToPformat(transferBuffer, processBlockSize, 1, Ambisonic::Format::ACN);
-        convolution.process(transferBuffer, processBlockSize);
-        Ambisonic::PformatToBformat(transferBuffer, processBlockSize, 1, Ambisonic::Format::ACN);
-        outputBuffer.write(transferBuffer, processBlockSize);
+        inputBuffer.read(bFormatChunk, processBlockSize, processBlockSize);
+        
+        const vector<vector<float>> coefs
+        {
+            {1,  1,  1,  1},
+            {1,  1, -1, -1},
+            {1, -1,  1, -1},
+            {1, -1, -1,  1}
+        };
+        bFormatChunk.multiply(pFormatChunk, coefs);
+        convolution.process(pFormatChunk, processBlockSize);
+        // after convolution pFormatChunk is bFormat?
+        outputBuffer.write(pFormatChunk, processBlockSize);
+        
+        
     }
     
     if (outputBuffer.size() >= buffer.getNumSamples())
