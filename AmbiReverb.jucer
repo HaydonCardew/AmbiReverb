@@ -4,12 +4,11 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="ajl4SI" name="AmbiReverb">
     <GROUP id="{B1A4D31E-1D19-C0CA-5592-5F01F6CD0182}" name="Source">
-      <FILE id="en5Xs3" name="AmbisonicTools.cpp" compile="1" resource="0"
-            file="Source/AmbisonicTools.cpp"/>
-      <FILE id="tMPn8c" name="AmbisonicFifoBuffer.cpp" compile="1" resource="0"
-            file="Source/AmbisonicFifoBuffer.cpp"/>
-      <FILE id="AAF5GT" name="AmbisonicFifoBuffer.h" compile="0" resource="0"
-            file="Source/AmbisonicFifoBuffer.h"/>
+      <FILE id="Xoni0x" name="PFormatConfig.cpp" compile="1" resource="0"
+            file="Source/PFormatConfig.cpp"/>
+      <FILE id="nGdweF" name="PFormatConfig.h" compile="0" resource="0" file="Source/PFormatConfig.h"/>
+      <FILE id="fFb1A7" name="AudioChunk.cpp" compile="1" resource="0" file="Source/AudioChunk.cpp"/>
+      <FILE id="ZeVoJk" name="AudioChunk.h" compile="0" resource="0" file="Source/AudioChunk.h"/>
       <FILE id="RknD8T" name="Convolution.cpp" compile="1" resource="0" file="Source/Convolution.cpp"/>
       <FILE id="ra7nY2" name="Convolution.h" compile="0" resource="0" file="Source/Convolution.h"/>
       <FILE id="dul5Wa" name="FifoBuffer.cpp" compile="1" resource="0" file="Source/FifoBuffer.cpp"/>

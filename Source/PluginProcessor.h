@@ -11,7 +11,7 @@
 #include <JuceHeader.h>
 #include "FifoBuffer.h"
 #include "Convolution.h"
-
+#include "PFormatConfig.h"
 //==============================================================================
 /**
 */
@@ -88,13 +88,24 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     void loadImpulseResponse(juce::AudioFormatReader* reader);
+    
+    static const int processBlockSize = 2048;
+    static const int ambiOrder = 1;
+    static const int maxIrLengthMs = 2000;
+    int requiredNumIrChannels();
+    
 private:
     
     FifoBuffer inputBuffer, outputBuffer;
-    AudioChunk bFormatChunk, pFormatChunk;
+    AudioChunk bFormatChunk, pFormatChunk, transferChunk;
     
-    const int processBlockSize;
-    MultiChannelConvolution convolution;
+    int bFormatChannels;
+    vector<BFormatConvolution> convolution;
+    PFormatConfigs configList;
+    pFormatCoefs pFormatCoefficients;
+    //shared_ptr<PFormatConfig> currentConfig; // needs to be matrix!
+    
+    
     BufferTransfer bufferTransfer;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbiReverbAudioProcessor)

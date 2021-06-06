@@ -10,44 +10,32 @@
 
 #include "Convolution.h"
 
-MultiChannelConvolution::MultiChannelConvolution()
-{
-    
-}
-
-void MultiChannelConvolution::setNumberOfChannels(unsigned nChannels)
+BFormatConvolution::BFormatConvolution(unsigned order)
 {
     Convolution::NonUniform headSize;
     headSize.headSizeInSamples = 1024;
     convolution.clear();
+    const unsigned nChannels = pow(order+1, 2);
     for (int i = 0; i < nChannels; ++i)
     {
         convolution.push_back(make_shared<Convolution>(headSize));
     }
 }
 
-void MultiChannelConvolution::prepare(double sampleRate, unsigned int maximumBlocksize)
+void BFormatConvolution::prepare(double sampleRate, unsigned int maximumBlockSize)
 {
-    processSpec.maximumBlockSize = maximumBlocksize;
+    processSpec.maximumBlockSize = maximumBlockSize;
     processSpec.sampleRate = sampleRate;
     processSpec.numChannels = 1;
     for (auto & conv : convolution)
     {
         conv->prepare(processSpec);
     }
+    transferBuffer.resize(maximumBlockSize);
 }
 
-void MultiChannelConvolution::reset()
+void BFormatConvolution::loadImpulseResponse(BufferWithSampleRate& audio, bool normalise)
 {
-    for (auto & conv : convolution)
-    {
-        conv->reset();
-    }
-}
-
-void MultiChannelConvolution::loadImpulseResponse(BufferWithSampleRate& audio, bool normalise)
-{
-    // i think the issue is here...
     assert(audio.getNumChannels() == convolution.size());
     Convolution::Normalise norm = normalise ? Convolution::Normalise::yes : Convolution::Normalise::no;
     float** ptrs = audio.getArrayOfWritePointers();
@@ -57,17 +45,28 @@ void MultiChannelConvolution::loadImpulseResponse(BufferWithSampleRate& audio, b
     }
 }
 
-void MultiChannelConvolution::process(vector<vector<float>>& audio, const unsigned nSamples)
+// Mono Input, BFormat Output
+void BFormatConvolution::process(vector<float>& input, vector<vector<float>>& output, const unsigned nSamples)
 {
-    assert(audio.size() == convolution.size());
+    assert(output.size() == convolution.size());
     assert(nSamples == processSpec.maximumBlockSize);
-    assert(audio[0].size() == nSamples);
+    assert(input.size() == nSamples);
 
-    for ( int i = 0; i < audio.size(); ++i)
+    for ( int i = 0; i < output.size(); ++i)
     {
-        float* const ptr = audio[i].data();
-        AudioBlock<float> block (&ptr, 1, nSamples);
-        ProcessContextReplacing<float> context(block);
+        float* const inPtr = input.data();
+        AudioBlock<float> inputBlock (&inPtr, 1, nSamples);
+        float* const outPtr = output[i].data();
+        AudioBlock<float> outputBlock (&outPtr, 1, nSamples);
+        ProcessContextNonReplacing<float> context(inputBlock, outputBlock);
         convolution[i]->process(context);
+    }
+}
+
+void BFormatConvolution::reset()
+{
+    for (auto & conv : convolution)
+    {
+        conv->reset();
     }
 }

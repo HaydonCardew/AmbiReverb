@@ -29,18 +29,16 @@ private:
     double sampleRate = 0.0;
 };
 
-class MultiChannelConvolution
+class BFormatConvolution
 {
 public:
-    MultiChannelConvolution();
-    void setNumberOfChannels(unsigned nChannels);
-    void prepare(double sampleRate, unsigned int maximumBlcoksize);
-    //void loadImpulseResponse(vector<vector<float>>& audio, double sampleRate, bool normalise);
+    BFormatConvolution(unsigned order);
+    void prepare(double sampleRate, unsigned int maximumBlocksize);
     void loadImpulseResponse(BufferWithSampleRate& audio, bool normalise);
-    void process(vector<vector<float>>& audio, const unsigned nSamples);
+    void process(vector<float>& input, vector<vector<float>>& output, const unsigned nSamples);
     void reset();
 private:
     vector<shared_ptr<Convolution>> convolution;
-    //vector<shared_ptr<Gain<float>>> gain;
     ProcessSpec processSpec;
+    vector<float> transferBuffer;
 };
