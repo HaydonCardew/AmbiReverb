@@ -26,7 +26,9 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
                 {
                     juce::AudioFormatReader* reader = formatManager.createReaderFor(result); // this leaks
                     assert(audioProcessor.requiredNumIrChannels() == reader->numChannels);
-                    assert(audioProcessor.maxIrLengthMs/1000 > (reader->lengthInSamples / reader->sampleRate));
+                    float maxLength = audioProcessor.maxIrLengthMs/1000;
+                    float length = (reader->lengthInSamples / reader->sampleRate);
+                    assert(audioProcessor.maxIrLengthMs/1000 >= (reader->lengthInSamples / reader->sampleRate));
                     audioProcessor.loadImpulseResponse(reader);
                 }
             };
@@ -37,6 +39,15 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
                                  setReader);
     };
     addAndMakeVisible(fileButton);
+    
+    vector<string> selections = audioProcessor.getAvailPFormatSelections();
+    for (int i = 0; i < selections.size(); ++i)
+    {
+        pFormatSelector.addItem (selections[i], i+1);
+    }
+     pFormatSelector.onChange = [this] { audioProcessor.setPFormatConfig(pFormatSelector.getText().toStdString()); }; //  this would be safer via IDs
+    pFormatSelector.setSelectedId (1);
+    addAndMakeVisible(pFormatSelector);
 }
 
 void AmbiReverbAudioProcessorEditor::selectImpulseResponse()
@@ -70,4 +81,5 @@ void AmbiReverbAudioProcessorEditor::resized()
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
     fileButton.setBoundsRelative(0.1, 0.1, 0.6, 0.2);
+    pFormatSelector.setBoundsRelative(0.1, 0.3, 0.6, 0.2);
 }

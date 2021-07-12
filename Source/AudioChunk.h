@@ -10,18 +10,19 @@
 
 #pragma once
 #include <vector>
+#include "Matrix.h"
 
 using namespace std;
 
-class AudioChunk : public vector<vector<float>>
+class AudioChunk : public HC::Matrix
 {
 public:
-    AudioChunk();
+    using Matrix::Matrix;
     AudioChunk(unsigned nChannels, unsigned nSamples);
     
     int getNumChannels() const;
     int getNumSamples() const;
     void zeroSamples();
-    void add(AudioChunk& input);
-    static void multiply(const AudioChunk& input, const vector<vector<float>>& coefs, AudioChunk& output);
+    void add(const AudioChunk& input);
+    //static void multiply(const AudioChunk& input, const vector<vector<float>>& coefs, AudioChunk& output);
 };

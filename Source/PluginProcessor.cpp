@@ -22,15 +22,15 @@ AmbiReverbAudioProcessor::AmbiReverbAudioProcessor()
                        ), bFormatChannels(pow(ambiOrder+1, 2))
 #endif
 {
-    pFormatCoefficients = configList.getCoefficients("Tetrahedron", ambiOrder);
+    decodingMatrix = configList.getDecodingCoefs("T Design (4)", ambiOrder);
     bFormatChunk.resize(bFormatChannels, vector<float>(processBlockSize));
-    pFormatChunk.resize(configList.getMaxPFormatChannels(), vector<float>(processBlockSize));
+    pFormatChunk.resize(configList.getMaxChannels(), vector<float>(processBlockSize));
     transferChunk.resize(bFormatChannels, vector<float>(processBlockSize));
     
     inputBuffer.resize(bFormatChannels, processBlockSize * 2);
     outputBuffer.resize(bFormatChannels, processBlockSize * 2);
     convolution.clear();
-    for (int i = 0; i < configList.getMaxPFormatChannels(); ++i)
+    for (int i = 0; i < configList.getMaxChannels(); ++i)
     {
         convolution.push_back(BFormatConvolution(ambiOrder));
     }
@@ -42,7 +42,7 @@ AmbiReverbAudioProcessor::~AmbiReverbAudioProcessor()
 
 int AmbiReverbAudioProcessor::requiredNumIrChannels()
 {
-    return static_cast<int>(pFormatCoefficients.size()) * bFormatChannels;
+    return static_cast<int>(decodingMatrix.size()) * bFormatChannels;
 }
 
 //==============================================================================
@@ -152,13 +152,31 @@ bool AmbiReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
 void AmbiReverbAudioProcessor::loadImpulseResponse(juce::AudioFormatReader* reader)
 {
     const unsigned numChannels = reader->numChannels;
-    //assert(pFormatCoefficients.size()*bFormatChannels == numChannels);
-    assert(bFormatChannels == numChannels);
+    assert(decodingMatrix.size()*bFormatChannels == numChannels);
+    //assert(bFormatChannels == numChannels);
     const long numSamples = reader->lengthInSamples;
     AudioBuffer<float> impulseResponse(reader->numChannels, (int)numSamples);
     impulseResponse.clear(); // make sure memory in buffer is set to zero
     reader->read(&impulseResponse, 0, (int)numSamples, 0, true, true);
     bufferTransfer.set(BufferWithSampleRate{std::move(impulseResponse), reader->sampleRate});
+}
+
+vector<string> AmbiReverbAudioProcessor::getAvailPFormatSelections()
+{
+    return configList.getConfigsNames();
+}
+
+void AmbiReverbAudioProcessor::setPFormatConfig(string config)
+{
+    // this needs to be thread safe (and more!)
+    lock_guard<mutex> guard(processAudioLock);
+    decodingMatrix = configList.getDecodingCoefs(config, ambiOrder);
+    // clear IR..
+    // clear convs..
+    for (auto & conv : convolution)
+    {
+        conv.reset();
+    }
 }
 
 void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
@@ -179,20 +197,26 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     assert(totalNumOutputChannels == bFormatChannels);
     inputBuffer.write(buffer.getArrayOfReadPointers(), buffer.getNumSamples());
     
-    bufferTransfer.get ([this] (BufferWithSampleRate& ir)
+    // pass vector<BufferWithSampleRate> ?
+    bufferTransfer.get ([this] (BufferWithSampleRate& ir) // ir = bFromatchannels * pFormatChannels.
     {
         for ( auto & conv : convolution)
         {
-            conv.loadImpulseResponse(ir, false); // must be this?
+            assert(false);// This is wrong. Need to split up into BFormat sections...
+            conv.loadImpulseResponse(ir, false); //
         }
     });
+    
+    // check IR loaded here?
+    // perform lock as well?
+    lock_guard<mutex> guard(processAudioLock);
     
     if (inputBuffer.size() >= processBlockSize)
     {
         inputBuffer.read(bFormatChunk, processBlockSize, processBlockSize);
-        AudioChunk::multiply(bFormatChunk, pFormatCoefficients, pFormatChunk);
+        decodingMatrix.multiply(bFormatChunk, pFormatChunk);
         bFormatChunk.zeroSamples();
-        for (int channel = 0; channel < pFormatCoefficients.size(); ++channel) //don't do it by pFormatChunk channels! set that to max at start
+        for (int channel = 0; channel < decodingMatrix.size(); ++channel) //don't do it by pFormatChunk channels! set that to max at start
         {
             convolution[channel].process(pFormatChunk[channel], transferChunk, processBlockSize);
             bFormatChunk.add(transferChunk);

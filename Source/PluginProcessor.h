@@ -88,10 +88,12 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     void loadImpulseResponse(juce::AudioFormatReader* reader);
+    vector<string> getAvailPFormatSelections();
+    void setPFormatConfig(string config);
     
     static const int processBlockSize = 2048;
     static const int ambiOrder = 1;
-    static const int maxIrLengthMs = 2000;
+    static const int maxIrLengthMs = 4000;
     int requiredNumIrChannels();
     
 private:
@@ -102,11 +104,10 @@ private:
     int bFormatChannels;
     vector<BFormatConvolution> convolution;
     PFormatConfigs configList;
-    pFormatCoefs pFormatCoefficients;
-    //shared_ptr<PFormatConfig> currentConfig; // needs to be matrix!
-    
-    
+    HC::Matrix decodingMatrix;
     BufferTransfer bufferTransfer;
+    
+    mutex processAudioLock;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbiReverbAudioProcessor)
 };

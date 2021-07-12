@@ -10,18 +10,19 @@
 
 #include "AudioChunk.h"
 
-AudioChunk::AudioChunk() {};
+//AudioChunk::AudioChunk() {};
 
-AudioChunk::AudioChunk(unsigned nChannels, unsigned nSamples) : vector<vector<float>>(nChannels, vector<float>(nSamples, 0.f)) {};
+AudioChunk::AudioChunk(unsigned nChannels, unsigned nSamples) : Matrix(nChannels, nSamples)
+{};
 
 int AudioChunk::getNumChannels() const
 {
-    return static_cast<int>(size());
+    return numRows();
 }
 
 int AudioChunk::getNumSamples() const
 {
-    return static_cast<int>((*this)[0].size());
+    return numColumns();
 }
 
 void AudioChunk::zeroSamples()
@@ -36,7 +37,7 @@ void AudioChunk::zeroSamples()
     }
 }
 
-void AudioChunk::add(AudioChunk& input)
+void AudioChunk::add(const AudioChunk& input)
 {
     vector<vector<float>>& audio = *this;
     assert(input.size() >= audio.size());
@@ -51,7 +52,7 @@ void AudioChunk::add(AudioChunk& input)
 }
 
 // coefs in format coef[output channel][input channel coef]
-void AudioChunk::multiply(const AudioChunk& input, const vector<vector<float>>& coefs, AudioChunk& output)
+/*void AudioChunk::multiply(const AudioChunk& input, const vector<vector<float>>& coefs, AudioChunk& output)
 {
     const int nSamples = input.getNumSamples();
     const int nInputChannels = input.getNumChannels();
@@ -72,4 +73,4 @@ void AudioChunk::multiply(const AudioChunk& input, const vector<vector<float>>& 
             }
         }
     }
-}
+}*/

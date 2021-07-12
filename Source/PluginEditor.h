@@ -32,5 +32,6 @@ private:
     juce::TextButton fileButton;
     juce::FileChooser fileChooser;
     juce::AudioFormatManager formatManager;
+    juce::ComboBox pFormatSelector;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbiReverbAudioProcessorEditor)
 };
