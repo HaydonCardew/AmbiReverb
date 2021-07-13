@@ -4,6 +4,10 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="ajl4SI" name="AmbiReverb">
     <GROUP id="{B1A4D31E-1D19-C0CA-5592-5F01F6CD0182}" name="Source">
+      <FILE id="DWDt2H" name="ImpulseResponse.cpp" compile="1" resource="0"
+            file="Source/ImpulseResponse.cpp"/>
+      <FILE id="GtNqaw" name="ImpulseResponse.h" compile="0" resource="0"
+            file="Source/ImpulseResponse.h"/>
       <FILE id="tlhuLW" name="Matrix.cpp" compile="1" resource="0" file="Source/Matrix.cpp"/>
       <FILE id="cMlPft" name="Matrix.h" compile="0" resource="0" file="Source/Matrix.h"/>
       <FILE id="Xoni0x" name="PFormatConfig.cpp" compile="1" resource="0"

@@ -34,7 +34,7 @@ void BFormatConvolution::prepare(double sampleRate, unsigned int maximumBlockSiz
     transferBuffer.resize(maximumBlockSize);
 }
 
-void BFormatConvolution::loadImpulseResponse(BufferWithSampleRate& audio, bool normalise)
+void BFormatConvolution::loadImpulseResponse(ImpulseResponse&& audio, bool normalise)
 {
     assert(audio.getNumChannels() == convolution.size());
     Convolution::Normalise norm = normalise ? Convolution::Normalise::yes : Convolution::Normalise::no;

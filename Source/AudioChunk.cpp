@@ -10,8 +10,6 @@
 
 #include "AudioChunk.h"
 
-//AudioChunk::AudioChunk() {};
-
 AudioChunk::AudioChunk(unsigned nChannels, unsigned nSamples) : Matrix(nChannels, nSamples)
 {};
 
@@ -50,27 +48,3 @@ void AudioChunk::add(const AudioChunk& input)
         }
     }
 }
-
-// coefs in format coef[output channel][input channel coef]
-/*void AudioChunk::multiply(const AudioChunk& input, const vector<vector<float>>& coefs, AudioChunk& output)
-{
-    const int nSamples = input.getNumSamples();
-    const int nInputChannels = input.getNumChannels();
-    const int nOutputChannels = output.getNumChannels();
-    
-    assert(nInputChannels == coefs[0].size());
-    assert(coefs.size() == nOutputChannels); // could be >= but this is a nice check
-    assert(output.getNumSamples() == nSamples); // could be >= but this is a nice check
-    
-    for (int sample = 0; sample < nSamples; ++sample)
-    {
-        for (int outputChannel = 0; outputChannel < nOutputChannels; ++outputChannel)
-        {
-            output[outputChannel][sample] = input[0][sample] * coefs[outputChannel][0];
-            for (int inputChannel = 1; inputChannel < nInputChannels; ++inputChannel)
-            {
-                output[outputChannel][sample] += input[inputChannel][sample] * coefs[outputChannel][inputChannel];
-            }
-        }
-    }
-}*/

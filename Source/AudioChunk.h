@@ -24,5 +24,4 @@ public:
     int getNumSamples() const;
     void zeroSamples();
     void add(const AudioChunk& input);
-    //static void multiply(const AudioChunk& input, const vector<vector<float>>& coefs, AudioChunk& output);
 };

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "ImpulseResponse.h"
 #include "FifoBuffer.h"
 #include "Convolution.h"
 #include "PFormatConfig.h"
@@ -17,35 +18,6 @@
 */
 
 using namespace juce;
-
-class BufferTransfer
-{
-public:
-    void set (BufferWithSampleRate&& p)
-    {
-        const SpinLock::ScopedLockType lock (mutex);
-        buffer = std::move (p);
-        newBuffer = true;
-    }
-
-    // Call `fn` passing the new buffer, if there's one available
-    template <typename Fn>
-    void get (Fn&& fn)
-    {
-        const SpinLock::ScopedTryLockType lock (mutex);
-
-        if (lock.isLocked() && newBuffer)
-        {
-            fn (buffer);
-            newBuffer = false;
-        }
-    }
-
-private:
-    BufferWithSampleRate buffer;
-    bool newBuffer = false;
-    SpinLock mutex;
-};
 
 class AmbiReverbAudioProcessor  : public juce::AudioProcessor
 {

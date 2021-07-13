@@ -134,7 +134,7 @@ bool AmbiReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
     // In this template code we only support mono or stereo.
     // Some plugin hosts, such as certain GarageBand versions, will only
     // load plugins that support stereo bus layouts.
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::ambisonic(1))
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::ambisonic(ambiOrder))
     {
         //return false;
     }
@@ -152,13 +152,12 @@ bool AmbiReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
 void AmbiReverbAudioProcessor::loadImpulseResponse(juce::AudioFormatReader* reader)
 {
     const unsigned numChannels = reader->numChannels;
-    assert(decodingMatrix.size()*bFormatChannels == numChannels);
-    //assert(bFormatChannels == numChannels);
+    assert(decodingMatrix.size()*bFormatChannels == numChannels); //  this shouldnt be an assert. fine for now
     const long numSamples = reader->lengthInSamples;
     AudioBuffer<float> impulseResponse(reader->numChannels, (int)numSamples);
     impulseResponse.clear(); // make sure memory in buffer is set to zero
     reader->read(&impulseResponse, 0, (int)numSamples, 0, true, true);
-    bufferTransfer.set(BufferWithSampleRate{std::move(impulseResponse), reader->sampleRate});
+    bufferTransfer.set(ImpulseResponse(std::move(impulseResponse), reader->sampleRate));
 }
 
 vector<string> AmbiReverbAudioProcessor::getAvailPFormatSelections()
@@ -191,29 +190,29 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     {
         buffer.clear (i, 0, buffer.getNumSamples());
     }
-    // should work for array of pointers..
-    //inputBuffer.write(vector<const float*>({buffer.getReadPointer(0), buffer.getReadPointer(1)}), buffer.getNumSamples());
+    
     assert(totalNumInputChannels == bFormatChannels);
     assert(totalNumOutputChannels == bFormatChannels);
     inputBuffer.write(buffer.getArrayOfReadPointers(), buffer.getNumSamples());
     
-    // pass vector<BufferWithSampleRate> ?
-    bufferTransfer.get ([this] (BufferWithSampleRate& ir) // ir = bFromatchannels * pFormatChannels.
+    bufferTransfer.get ([this] (ImpulseResponse& ir) // ir = bFromatchannels * pFormatChannels.
     {
-        for ( auto & conv : convolution)
+        //assert(decodingMatrix.size() == convolution.size()); // nope, to save creating more convs I initalise the maximum straight away
+        for (int i = 0; i < decodingMatrix.size(); ++i)
         {
-            assert(false);// This is wrong. Need to split up into BFormat sections...
-            conv.loadImpulseResponse(ir, false); //
+            int startChannel = i * bFormatChannels;
+            convolution[i].loadImpulseResponse(ir.getSubBuffer(startChannel, startChannel + bFormatChannels), false);
         }
     });
     
     // check IR loaded here?
     // perform lock as well?
-    lock_guard<mutex> guard(processAudioLock);
+    lock_guard<mutex> guard(processAudioLock); // a lock in audio thread is possibly silly?
     
     if (inputBuffer.size() >= processBlockSize)
     {
         inputBuffer.read(bFormatChunk, processBlockSize, processBlockSize);
+        pFormatChunk.zeroSamples();
         decodingMatrix.multiply(bFormatChunk, pFormatChunk);
         bFormatChunk.zeroSamples();
         for (int channel = 0; channel < decodingMatrix.size(); ++channel) //don't do it by pFormatChunk channels! set that to max at start
