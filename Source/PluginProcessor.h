@@ -68,6 +68,8 @@ public:
     static const int maxIrLengthMs = 4000;
     int requiredNumIrChannels();
     
+    void numChannelsChanged() override;
+    
 private:
     
     FifoBuffer inputBuffer, outputBuffer;

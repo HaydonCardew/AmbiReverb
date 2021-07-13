@@ -107,6 +107,13 @@ void AmbiReverbAudioProcessor::changeProgramName (int index, const juce::String&
 {
 }
 
+void AmbiReverbAudioProcessor::numChannelsChanged ()
+{
+    // getTotalNumInputChannels() != getTotalNumOutputChannels();
+    // getTotalNumInputChannels() != bFormatChannels;
+    // Just use this for IO? Use buffers in the process thread for audio
+}
+
 //==============================================================================
 void AmbiReverbAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
@@ -130,11 +137,7 @@ bool AmbiReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
     juce::ignoreUnused (layouts);
     return true;
   #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::ambisonic(ambiOrder))
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::ambisonic(ambiOrder)) // not sure about this
     {
         //return false;
     }
@@ -152,7 +155,7 @@ bool AmbiReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
 void AmbiReverbAudioProcessor::loadImpulseResponse(juce::AudioFormatReader* reader)
 {
     const unsigned numChannels = reader->numChannels;
-    assert(decodingMatrix.size()*bFormatChannels == numChannels); //  this shouldnt be an assert. fine for now
+    assert(requiredNumIrChannels() == numChannels); //  this shouldnt be an assert. fine for now
     const long numSamples = reader->lengthInSamples;
     AudioBuffer<float> impulseResponse(reader->numChannels, (int)numSamples);
     impulseResponse.clear(); // make sure memory in buffer is set to zero
@@ -181,18 +184,11 @@ void AmbiReverbAudioProcessor::setPFormatConfig(string config)
 void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    
-    //https://docs.juce.com/master/tutorial_looping_audio_sample_buffer.html
-    
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+    if (getTotalNumInputChannels() != bFormatChannels || getTotalNumOutputChannels() != bFormatChannels)
     {
-        buffer.clear (i, 0, buffer.getNumSamples());
+        return;
     }
     
-    assert(totalNumInputChannels == bFormatChannels);
-    assert(totalNumOutputChannels == bFormatChannels);
     inputBuffer.write(buffer.getArrayOfReadPointers(), buffer.getNumSamples());
     
     bufferTransfer.get ([this] (ImpulseResponse& ir) // ir = bFromatchannels * pFormatChannels.
