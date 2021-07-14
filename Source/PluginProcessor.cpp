@@ -152,6 +152,12 @@ void AmbiReverbAudioProcessor::loadImpulseResponse(unique_ptr<juce::AudioFormatR
     AudioBuffer<float> impulseResponse(reader->numChannels, (int)numSamples);
     reader->read(&impulseResponse, 0, (int)numSamples, 0, true, true);
     bufferTransfer.set(ImpulseResponse(std::move(impulseResponse), reader->sampleRate));
+    // Don't set loadedImpulseResponse here. Set it in audio thread as that's where it is actually loaded
+}
+
+bool AmbiReverbAudioProcessor::hasImpulseResponse()
+{
+    return loadedImpulseResponse;
 }
 
 int AmbiReverbAudioProcessor::numberOfBFormatChannels()
@@ -169,23 +175,16 @@ void AmbiReverbAudioProcessor::setPFormatConfig(string config)
     // this needs to be thread safe (and more!)
     lock_guard<mutex> guard(processAudioLock);
     decodingMatrix = configList.getDecodingCoefs(config, ambiOrder);
-    // clear IR..
-    // clear convs..
     for (auto & conv : convolution)
     {
         conv.reset();
     }
+    loadedImpulseResponse = false;
 }
 
 void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    if (getTotalNumInputChannels() != bFormatChannels || getTotalNumOutputChannels() != bFormatChannels)
-    {
-        return;
-    }
-    
-    inputBuffer.write(buffer.getArrayOfReadPointers(), buffer.getNumSamples());
     
     bufferTransfer.get ([this] (ImpulseResponse& ir) // ir = bFromatchannels * pFormatChannels.
     {
@@ -195,10 +194,16 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             int startChannel = i * bFormatChannels;
             convolution[i].loadImpulseResponse(ir.getSubBuffer(startChannel, startChannel + bFormatChannels), false);
         }
+        loadedImpulseResponse = true;
     });
     
-    // check IR loaded here?
-    // perform lock as well?
+    if (getTotalNumInputChannels() != bFormatChannels || getTotalNumOutputChannels() != bFormatChannels || !loadedImpulseResponse)
+    {
+        return;
+    }
+    
+    inputBuffer.write(buffer.getArrayOfReadPointers(), buffer.getNumSamples());
+    
     lock_guard<mutex> guard(processAudioLock); // a lock in audio thread is possibly silly?
     
     if (inputBuffer.size() >= processBlockSize)

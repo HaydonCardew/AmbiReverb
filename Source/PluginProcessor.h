@@ -69,6 +69,8 @@ public:
     int requiredNumIrChannels();
     int numberOfBFormatChannels();
     
+    bool hasImpulseResponse();
+    
 private:
     
     FifoBuffer inputBuffer, outputBuffer;
@@ -79,6 +81,8 @@ private:
     PFormatConfigs configList;
     HC::Matrix decodingMatrix;
     BufferTransfer bufferTransfer;
+    
+    bool loadedImpulseResponse;
     
     mutex processAudioLock;
     //==============================================================================
