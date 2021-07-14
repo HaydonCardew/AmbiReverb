@@ -16,6 +16,7 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (400, 300);
+    setResizable(false, true);
     startTimer(1000);
     formatManager.registerBasicFormats();
     
@@ -65,7 +66,7 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
     {
         pFormatSelector.addItem (selections[i], i+1);
     }
-     pFormatSelector.onChange = [this] { audioProcessor.setPFormatConfig(pFormatSelector.getText().toStdString()); }; //  this would be safer via IDs
+    pFormatSelector.onChange = [this] { audioProcessor.setPFormatConfig(pFormatSelector.getText().toStdString()); }; //  this would be safer via IDs
     pFormatSelector.setSelectedId (1);
     addAndMakeVisible(pFormatSelector);
     
@@ -73,6 +74,8 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
     addAndMakeVisible(outputChannelCount);
     
     updateChannelCountInformation();
+    
+    resized();
 }
 
 void AmbiReverbAudioProcessorEditor::timerCallback()
