@@ -14,7 +14,7 @@
 //==============================================================================
 /**
 */
-class AmbiReverbAudioProcessorEditor  : public juce::AudioProcessorEditor
+class AmbiReverbAudioProcessorEditor  : public juce::AudioProcessorEditor, juce::Timer
 {
 public:
     AmbiReverbAudioProcessorEditor (AmbiReverbAudioProcessor&);
@@ -33,5 +33,12 @@ private:
     juce::FileChooser fileChooser;
     juce::AudioFormatManager formatManager;
     juce::ComboBox pFormatSelector;
+    
+    juce::Label inputChannelCount;
+    juce::Label outputChannelCount;
+    
+    void updateChannelCountInformation();
+    
+    void timerCallback() override;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbiReverbAudioProcessorEditor)
 };

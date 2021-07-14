@@ -67,8 +67,7 @@ public:
     static const int ambiOrder = 1;
     static const int maxIrLengthMs = 4000;
     int requiredNumIrChannels();
-    
-    void numChannelsChanged() override;
+    int numberOfBFormatChannels();
     
 private:
     

@@ -107,13 +107,6 @@ void AmbiReverbAudioProcessor::changeProgramName (int index, const juce::String&
 {
 }
 
-void AmbiReverbAudioProcessor::numChannelsChanged ()
-{
-    // getTotalNumInputChannels() != getTotalNumOutputChannels();
-    // getTotalNumInputChannels() != bFormatChannels;
-    // Just use this for IO? Use buffers in the process thread for audio
-}
-
 //==============================================================================
 void AmbiReverbAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
@@ -161,6 +154,11 @@ void AmbiReverbAudioProcessor::loadImpulseResponse(juce::AudioFormatReader* read
     impulseResponse.clear(); // make sure memory in buffer is set to zero
     reader->read(&impulseResponse, 0, (int)numSamples, 0, true, true);
     bufferTransfer.set(ImpulseResponse(std::move(impulseResponse), reader->sampleRate));
+}
+
+int AmbiReverbAudioProcessor::numberOfBFormatChannels()
+{
+    return pow(ambiOrder+1, 2);
 }
 
 vector<string> AmbiReverbAudioProcessor::getAvailPFormatSelections()

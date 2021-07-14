@@ -16,6 +16,7 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (400, 300);
+    startTimer(1000);
     formatManager.registerBasicFormats();
     
     auto setReader = [this] (const juce::FileChooser& chooser)
@@ -38,6 +39,7 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
                                  juce::FileBrowserComponent::FileChooserFlags::canSelectFiles,
                                  setReader);
     };
+    
     addAndMakeVisible(fileButton);
     
     vector<string> selections = audioProcessor.getAvailPFormatSelections();
@@ -48,6 +50,33 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
      pFormatSelector.onChange = [this] { audioProcessor.setPFormatConfig(pFormatSelector.getText().toStdString()); }; //  this would be safer via IDs
     pFormatSelector.setSelectedId (1);
     addAndMakeVisible(pFormatSelector);
+    
+    addAndMakeVisible(inputChannelCount);
+    addAndMakeVisible(outputChannelCount);
+    
+    updateChannelCountInformation();
+}
+
+void AmbiReverbAudioProcessorEditor::timerCallback()
+{
+    updateChannelCountInformation();
+}
+
+void AmbiReverbAudioProcessorEditor::updateChannelCountInformation()
+{
+    int required = audioProcessor.numberOfBFormatChannels();
+    
+    int in = audioProcessor.getTotalNumInputChannels();
+    stringstream inputs;
+    inputs << "Input Channels: " << in << "/" << required;
+    inputChannelCount.setText(inputs.str(), dontSendNotification);
+    inputChannelCount.setColour(Label::textColourId, in == required ? Colours::white : Colours::red);
+    
+    int out = audioProcessor.getTotalNumOutputChannels();
+    stringstream outputs;
+    outputs << "Output Channels: " << out << "/" << required;
+    outputChannelCount.setText(outputs.str(), dontSendNotification);
+    outputChannelCount.setColour(Label::textColourId, out == required ? Colours::white : Colours::red);
 }
 
 void AmbiReverbAudioProcessorEditor::selectImpulseResponse()
@@ -73,7 +102,7 @@ void AmbiReverbAudioProcessorEditor::paint (juce::Graphics& g)
 
     g.setColour (juce::Colours::white);
     g.setFont (15.0f);
-    g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+    //g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
 }
 
 void AmbiReverbAudioProcessorEditor::resized()
@@ -82,4 +111,7 @@ void AmbiReverbAudioProcessorEditor::resized()
     // subcomponents in your editor..
     fileButton.setBoundsRelative(0.1, 0.1, 0.6, 0.2);
     pFormatSelector.setBoundsRelative(0.1, 0.3, 0.6, 0.2);
+    
+    inputChannelCount.setBoundsRelative(0.1, 0.5, 0.6, 0.2);
+    outputChannelCount.setBoundsRelative(0.1, 0.7, 0.6, 0.2);
 }
