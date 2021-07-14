@@ -25,12 +25,31 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
 
                 if (result != juce::File())
                 {
-                    juce::AudioFormatReader* reader = formatManager.createReaderFor(result); // this leaks
-                    assert(audioProcessor.requiredNumIrChannels() == reader->numChannels);
-                    float maxLength = audioProcessor.maxIrLengthMs/1000;
-                    float length = (reader->lengthInSamples / reader->sampleRate);
-                    assert(audioProcessor.maxIrLengthMs/1000 >= (reader->lengthInSamples / reader->sampleRate));
-                    audioProcessor.loadImpulseResponse(reader);
+                    juce::AudioFormatReader* reader = formatManager.createReaderFor(result); // this leaks. make unique?
+                    
+                    bool correctNumberOfChannels = (audioProcessor.requiredNumIrChannels() == reader->numChannels);
+                    float maxIrLengthSecs = audioProcessor.maxIrLengthMs/1000.f ;
+                    bool correctLength = (maxIrLengthSecs >= (reader->lengthInSamples / reader->sampleRate));
+                    
+                    if (correctNumberOfChannels && correctLength)
+                    {
+                        audioProcessor.loadImpulseResponse(reader);
+                    }
+                    else
+                    {
+                        string message = "Error";
+                        if (!correctNumberOfChannels)
+                        {
+                            message = "Incorrect number of channels in impulse response. Required " + to_string(audioProcessor.requiredNumIrChannels());
+                        }
+                        else if (!correctLength)
+                        {
+                            stringstream length;
+                            length << std::fixed << std::setprecision(1) << maxIrLengthSecs;
+                            message = "Impulse response is too long. Max length is " + length.str() + " seconds";
+                        }
+                        AlertWindow::showMessageBoxAsync(AlertWindow::InfoIcon, "Could not load file", message, "OK");
+                    }
                 }
             };
     fileButton.onClick = [this, setReader]
