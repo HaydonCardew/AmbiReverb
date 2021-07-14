@@ -72,7 +72,9 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
     
     addAndMakeVisible(inputChannelCount);
     addAndMakeVisible(outputChannelCount);
+    addAndMakeVisible(irLoaded);
     
+    updateIRLoadedInformation();
     updateChannelCountInformation();
     
     resized();
@@ -81,6 +83,7 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
 void AmbiReverbAudioProcessorEditor::timerCallback()
 {
     updateChannelCountInformation();
+    updateIRLoadedInformation();
 }
 
 void AmbiReverbAudioProcessorEditor::updateChannelCountInformation()
@@ -98,6 +101,13 @@ void AmbiReverbAudioProcessorEditor::updateChannelCountInformation()
     outputs << "Output Channels: " << out << "/" << required;
     outputChannelCount.setText(outputs.str(), dontSendNotification);
     outputChannelCount.setColour(Label::textColourId, out == required ? Colours::white : Colours::red);
+}
+
+void AmbiReverbAudioProcessorEditor::updateIRLoadedInformation()
+{
+    bool impulseResponseLoaded = audioProcessor.hasImpulseResponse();
+    irLoaded.setText(impulseResponseLoaded ? "Impulse response loaded" : "Impulse response not loaded!", dontSendNotification);
+    irLoaded.setColour(Label::textColourId, impulseResponseLoaded ? Colours::white : Colours::red);
 }
 
 void AmbiReverbAudioProcessorEditor::selectImpulseResponse()
@@ -120,7 +130,6 @@ void AmbiReverbAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
     g.setColour (juce::Colours::white);
     g.setFont (15.0f);
     //g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
@@ -130,9 +139,9 @@ void AmbiReverbAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
-    fileButton.setBoundsRelative(0.1, 0.1, 0.6, 0.2);
-    pFormatSelector.setBoundsRelative(0.1, 0.3, 0.6, 0.2);
-    
-    inputChannelCount.setBoundsRelative(0.1, 0.5, 0.6, 0.2);
-    outputChannelCount.setBoundsRelative(0.1, 0.7, 0.6, 0.2);
+    fileButton.setBoundsRelative (0.1, 0.1, 0.6, 0.2);
+    pFormatSelector.setBoundsRelative (0.1, 0.3, 0.6, 0.2);
+    irLoaded.setBoundsRelative (0.1, 0.5, 0.6, 0.1);
+    inputChannelCount.setBoundsRelative (0.1, 0.6, 0.6, 0.1);
+    outputChannelCount.setBoundsRelative (0.1, 0.7, 0.6, 0.1);
 }

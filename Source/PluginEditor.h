@@ -36,8 +36,10 @@ private:
     
     juce::Label inputChannelCount;
     juce::Label outputChannelCount;
+    juce::Label irLoaded;
     
     void updateChannelCountInformation();
+    void updateIRLoadedInformation();
     
     void timerCallback() override;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbiReverbAudioProcessorEditor)
