@@ -59,7 +59,7 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    void loadImpulseResponse(juce::AudioFormatReader* reader);
+    void loadImpulseResponse(unique_ptr<juce::AudioFormatReader> reader);
     vector<string> getAvailPFormatSelections();
     void setPFormatConfig(string config);
     

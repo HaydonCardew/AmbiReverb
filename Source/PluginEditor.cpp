@@ -25,15 +25,14 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
 
                 if (result != juce::File())
                 {
-                    juce::AudioFormatReader* reader = formatManager.createReaderFor(result); // this leaks. make unique?
-                    
+                    unique_ptr<juce::AudioFormatReader> reader(formatManager.createReaderFor(result));
                     bool correctNumberOfChannels = (audioProcessor.requiredNumIrChannels() == reader->numChannels);
                     float maxIrLengthSecs = audioProcessor.maxIrLengthMs/1000.f ;
                     bool correctLength = (maxIrLengthSecs >= (reader->lengthInSamples / reader->sampleRate));
                     
                     if (correctNumberOfChannels && correctLength)
                     {
-                        audioProcessor.loadImpulseResponse(reader);
+                        audioProcessor.loadImpulseResponse(move(reader));
                     }
                     else
                     {

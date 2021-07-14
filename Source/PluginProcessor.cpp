@@ -145,13 +145,11 @@ bool AmbiReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
 }
 #endif
 
-void AmbiReverbAudioProcessor::loadImpulseResponse(juce::AudioFormatReader* reader)
+void AmbiReverbAudioProcessor::loadImpulseResponse(unique_ptr<juce::AudioFormatReader> reader)
 {
-    const unsigned numChannels = reader->numChannels;
-    assert(requiredNumIrChannels() == numChannels); //  this shouldnt be an assert. fine for now
+    assert(requiredNumIrChannels() == reader->numChannels); // this is checked in the editor
     const long numSamples = reader->lengthInSamples;
     AudioBuffer<float> impulseResponse(reader->numChannels, (int)numSamples);
-    impulseResponse.clear(); // make sure memory in buffer is set to zero
     reader->read(&impulseResponse, 0, (int)numSamples, 0, true, true);
     bufferTransfer.set(ImpulseResponse(std::move(impulseResponse), reader->sampleRate));
 }
