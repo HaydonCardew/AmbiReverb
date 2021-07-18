@@ -17,6 +17,9 @@
 /**
 */
 
+#define P_FORMAT_SELECTOR_ID "p_format_selector_id"
+#define P_FORMAT_SELECTOR_NAME "p_format_selector_name"
+
 using namespace juce;
 
 class AmbiReverbAudioProcessor  : public juce::AudioProcessor
@@ -71,6 +74,8 @@ public:
     
     bool hasImpulseResponse();
     
+    AudioProcessorValueTreeState valueTree;
+    
 private:
     
     FifoBuffer inputBuffer, outputBuffer;
@@ -81,6 +86,8 @@ private:
     PFormatConfigs configList;
     HC::Matrix decodingMatrix;
     BufferTransfer bufferTransfer;
+    
+    
     
     bool loadedImpulseResponse;
     

@@ -105,7 +105,7 @@ public:
     string getName() const;
 private:
     const vector<MicrophonePosition> microphonePositions;
-    bool checkCoefsAreInverse();
+    bool checkCoefsAreInverse ();
     HC::Matrix decodingCoefs;
     HC::Matrix encodingCoefs;
     string name;

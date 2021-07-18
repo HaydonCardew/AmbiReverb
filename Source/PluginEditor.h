@@ -38,6 +38,8 @@ private:
     juce::Label outputChannelCount;
     juce::Label irLoaded;
     
+    unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> pFormatSelectorAttachment;
+    
     void updateChannelCountInformation();
     void updateIRLoadedInformation();
     

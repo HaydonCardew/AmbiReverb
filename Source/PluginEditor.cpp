@@ -52,6 +52,7 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
                     }
                 }
             };
+    
     fileButton.onClick = [this, setReader]
     {
         fileChooser.launchAsync (juce::FileBrowserComponent::FileChooserFlags::openMode |
@@ -61,15 +62,19 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
     
     addAndMakeVisible(fileButton);
     
+    pFormatSelectorAttachment = make_unique<AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.valueTree, P_FORMAT_SELECTOR_ID, pFormatSelector);
+    
     vector<string> selections = audioProcessor.getAvailPFormatSelections();
     for (int i = 0; i < selections.size(); ++i)
     {
         pFormatSelector.addItem (selections[i], i+1);
     }
     pFormatSelector.onChange = [this] { audioProcessor.setPFormatConfig(pFormatSelector.getText().toStdString()); }; //  this would be safer via IDs
-    pFormatSelector.setSelectedId (1);
-    addAndMakeVisible(pFormatSelector);
+    atomic<float>* selectorValue = audioProcessor.valueTree.getRawParameterValue(P_FORMAT_SELECTOR_ID);
+    float selection = (*selectorValue * (selections.size()-1)) + 1; // scale 0->1 to 1->selections.size()
+    pFormatSelector.setSelectedId(selection);
     
+    addAndMakeVisible(pFormatSelector);
     addAndMakeVisible(inputChannelCount);
     addAndMakeVisible(outputChannelCount);
     addAndMakeVisible(irLoaded);

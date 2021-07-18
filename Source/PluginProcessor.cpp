@@ -19,8 +19,13 @@ AmbiReverbAudioProcessor::AmbiReverbAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       ), bFormatChannels(pow(ambiOrder+1, 2))
+                       ),
 #endif
+bFormatChannels(pow(ambiOrder+1, 2)),
+valueTree(*this, nullptr, "ValueTree",
+{
+    make_unique<AudioParameterFloat>(P_FORMAT_SELECTOR_ID, P_FORMAT_SELECTOR_NAME, 0.0, 1.0, 0.0)
+})
 {
     decodingMatrix = configList.getDecodingCoefs("T Design (4)", ambiOrder);
     bFormatChunk.resize(bFormatChannels, vector<float>(processBlockSize));
@@ -42,7 +47,7 @@ AmbiReverbAudioProcessor::~AmbiReverbAudioProcessor()
 
 int AmbiReverbAudioProcessor::requiredNumIrChannels()
 {
-    return static_cast<int>(decodingMatrix.size()) * bFormatChannels;
+    return static_cast<int>(decodingMatrix[0].size()) * bFormatChannels;
 }
 
 //==============================================================================
@@ -151,7 +156,7 @@ void AmbiReverbAudioProcessor::loadImpulseResponse(unique_ptr<juce::AudioFormatR
     const long numSamples = reader->lengthInSamples;
     AudioBuffer<float> impulseResponse(reader->numChannels, (int)numSamples);
     reader->read(&impulseResponse, 0, (int)numSamples, 0, true, true);
-    bufferTransfer.set(ImpulseResponse(std::move(impulseResponse), reader->sampleRate));
+    bufferTransfer.set(ImpulseResponse(move(impulseResponse), reader->sampleRate));
     // Don't set loadedImpulseResponse here. Set it in audio thread as that's where it is actually loaded
 }
 
@@ -173,8 +178,8 @@ vector<string> AmbiReverbAudioProcessor::getAvailPFormatSelections()
 void AmbiReverbAudioProcessor::setPFormatConfig(string config)
 {
     // this needs to be thread safe (and more!)
-    lock_guard<mutex> guard(processAudioLock);
-    decodingMatrix = configList.getDecodingCoefs(config, ambiOrder);
+    lock_guard<mutex> guard (processAudioLock);
+    decodingMatrix = configList.getDecodingCoefs (config, ambiOrder);
     for (auto & conv : convolution)
     {
         conv.reset();
@@ -210,8 +215,9 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     {
         inputBuffer.read(bFormatChunk, processBlockSize, processBlockSize);
         pFormatChunk.zeroSamples();
-        decodingMatrix.multiply(bFormatChunk, pFormatChunk);
-        bFormatChunk.zeroSamples();
+        //decodingMatrix.multiply(bFormatChunk, pFormatChunk);
+        bFormatChunk.multiply(decodingMatrix, pFormatChunk);
+        bFormatChunk.zeroSamples(); // probably dont need
         for (int channel = 0; channel < decodingMatrix.size(); ++channel) //don't do it by pFormatChunk channels! set that to max at start
         {
             convolution[channel].process(pFormatChunk[channel], transferChunk, processBlockSize);
