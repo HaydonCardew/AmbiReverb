@@ -21,23 +21,28 @@ AmbiReverbAudioProcessor::AmbiReverbAudioProcessor()
                      #endif
                        ),
 #endif
-bFormatChannels(pow(ambiOrder+1, 2)),
 valueTree(*this, nullptr, "ValueTree",
 {
-    make_unique<AudioParameterFloat>(P_FORMAT_SELECTOR_ID, P_FORMAT_SELECTOR_NAME, 0.0, 1.0, 0.0)
+    make_unique<AudioParameterFloat>(P_FORMAT_SELECTOR_ID, P_FORMAT_SELECTOR_NAME, 0.0, 1.0, 0.0),
+    make_unique<AudioParameterFloat>(ORDER_SELECTOR_ID, ORDER_SELECTOR_NAME, 1.0, maxAmbiOrder, 1.0)
 })
 {
-    decodingMatrix = configList.getDecodingCoefs("T Design (4)", ambiOrder);
-    bFormatChunk.resize(bFormatChannels, vector<float>(processBlockSize));
-    pFormatChunk.resize(configList.getMaxChannels(), vector<float>(processBlockSize));
-    transferChunk.resize(bFormatChannels, vector<float>(processBlockSize));
+    atomic<float>* ambiOrder = valueTree.getRawParameterValue(ORDER_SELECTOR_ID);
+    decodingMatrix = configList.getDecodingCoefs("T Design (4)", *ambiOrder);
     
-    inputBuffer.resize(bFormatChannels, processBlockSize * 2);
-    outputBuffer.resize(bFormatChannels, processBlockSize * 2);
+    int maxBFormatChannels = pow(maxAmbiOrder+1, 2);
+    // these get multiplied so changing sizes is an issue...
+    bFormatChunk.resize(maxBFormatChannels, vector<float>(processBlockSize));
+    pFormatChunk.resize(configList.getMaxChannels(), vector<float>(processBlockSize));
+    transferChunk.resize(maxBFormatChannels, vector<float>(processBlockSize));
+    
+    inputBuffer.resize(maxBFormatChannels, processBlockSize * 2); // these may be an issue as they'll get out of sync?
+    outputBuffer.resize(maxBFormatChannels, processBlockSize * 2);
+    
     convolution.clear();
     for (int i = 0; i < configList.getMaxChannels(); ++i)
     {
-        convolution.push_back(BFormatConvolution(ambiOrder));
+        convolution.push_back(BFormatConvolution(maxAmbiOrder));
     }
 }
 
@@ -47,7 +52,7 @@ AmbiReverbAudioProcessor::~AmbiReverbAudioProcessor()
 
 int AmbiReverbAudioProcessor::requiredNumIrChannels()
 {
-    return static_cast<int>(decodingMatrix[0].size()) * bFormatChannels;
+    return static_cast<int>(decodingMatrix[0].size()) * numberOfBFormatChannels();
 }
 
 //==============================================================================
@@ -135,10 +140,10 @@ bool AmbiReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
     juce::ignoreUnused (layouts);
     return true;
   #else
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::ambisonic(ambiOrder)) // not sure about this
+    /*if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::ambisonic(ambiOrder)) // not sure about this
     {
-        //return false;
-    }
+        return false;
+    }*/
     // This checks if the input layout matches the output layout
    #if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
@@ -167,7 +172,7 @@ bool AmbiReverbAudioProcessor::hasImpulseResponse()
 
 int AmbiReverbAudioProcessor::numberOfBFormatChannels()
 {
-    return pow(ambiOrder+1, 2);
+    return pow(*valueTree.getRawParameterValue(ORDER_SELECTOR_ID)+1, 2);
 }
 
 vector<string> AmbiReverbAudioProcessor::getAvailPFormatSelections()
@@ -179,7 +184,7 @@ void AmbiReverbAudioProcessor::setPFormatConfig(string config)
 {
     // this needs to be thread safe (and more!)
     lock_guard<mutex> guard (processAudioLock);
-    decodingMatrix = configList.getDecodingCoefs (config, ambiOrder);
+    decodingMatrix = configList.getDecodingCoefs (config, *valueTree.getRawParameterValue(ORDER_SELECTOR_ID));
     for (auto & conv : convolution)
     {
         conv.reset();
@@ -196,13 +201,13 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         //assert(decodingMatrix.size() == convolution.size()); // nope, to save creating more convs I initalise the maximum straight away
         for (int i = 0; i < decodingMatrix.size(); ++i)
         {
-            int startChannel = i * bFormatChannels;
-            convolution[i].loadImpulseResponse(ir.getSubBuffer(startChannel, startChannel + bFormatChannels), false);
+            int startChannel = i * numberOfBFormatChannels();
+            convolution[i].loadImpulseResponse(ir.getSubBuffer(startChannel, startChannel + numberOfBFormatChannels()), false);
         }
         loadedImpulseResponse = true;
     });
     
-    if (getTotalNumInputChannels() != bFormatChannels || getTotalNumOutputChannels() != bFormatChannels || !loadedImpulseResponse)
+    if (getTotalNumInputChannels() != numberOfBFormatChannels() || getTotalNumOutputChannels() != numberOfBFormatChannels() || !loadedImpulseResponse)
     {
         return;
     }

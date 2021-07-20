@@ -19,6 +19,8 @@
 
 #define P_FORMAT_SELECTOR_ID "p_format_selector_id"
 #define P_FORMAT_SELECTOR_NAME "p_format_selector_name"
+#define ORDER_SELECTOR_ID "order_selector_id"
+#define ORDER_SELECTOR_NAME "order_selector_name"
 
 using namespace juce;
 
@@ -67,7 +69,7 @@ public:
     void setPFormatConfig(string config);
     
     static const int processBlockSize = 2048;
-    static const int ambiOrder = 1;
+    static const int maxAmbiOrder = 1;
     static const int maxIrLengthMs = 4000;
     int requiredNumIrChannels();
     int numberOfBFormatChannels();
@@ -81,13 +83,10 @@ private:
     FifoBuffer inputBuffer, outputBuffer;
     AudioChunk bFormatChunk, pFormatChunk, transferChunk;
     
-    int bFormatChannels;
     vector<BFormatConvolution> convolution;
     PFormatConfigs configList;
     HC::Matrix decodingMatrix;
     BufferTransfer bufferTransfer;
-    
-    
     
     bool loadedImpulseResponse;
     

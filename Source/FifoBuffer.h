@@ -19,7 +19,7 @@ public:
     FifoBuffer();
     FifoBuffer(unsigned nChannels, unsigned size);
     void resize(unsigned nChannels, unsigned size);
-    unsigned capacity();
+    unsigned capacity(); // this may be a mistake, vector::capacity?
     void clear();
     bool empty();
     unsigned size();
@@ -30,7 +30,7 @@ public:
     void read(AudioChunk& data, unsigned nSamplesToRead, unsigned nSamplesToClear);
     void read(float** data, unsigned nSamplesToRead, unsigned nSamplesToClear);
 private:
-    vector<vector<float>> buffer;
+    vector<vector<float>> buffer; // just inherit!
     unsigned head;
     unsigned tail;
     unsigned bufferSize;
