@@ -212,13 +212,13 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         return;
     }
     
-    inputBuffer.write(buffer.getArrayOfReadPointers(), buffer.getNumSamples());
+    inputBuffer.write(buffer.getArrayOfReadPointers(), buffer.getNumChannels(), buffer.getNumSamples());
     
     lock_guard<mutex> guard(processAudioLock); // a lock in audio thread is possibly silly?
     
     if (inputBuffer.size() >= processBlockSize)
     {
-        inputBuffer.read(bFormatChunk, processBlockSize, processBlockSize);
+        inputBuffer.read(bFormatChunk, bFormatChunk.getNumChannels(), processBlockSize, processBlockSize);
         pFormatChunk.zeroSamples();
         //decodingMatrix.multiply(bFormatChunk, pFormatChunk);
         bFormatChunk.multiply(decodingMatrix, pFormatChunk);
@@ -228,12 +228,12 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             convolution[channel].process(pFormatChunk[channel], transferChunk, processBlockSize);
             bFormatChunk.add(transferChunk);
         }
-        outputBuffer.write(bFormatChunk, processBlockSize);
+        outputBuffer.write(bFormatChunk, bFormatChunk.getNumChannels(), processBlockSize);
     }
     
     if (outputBuffer.size() >= buffer.getNumSamples())
     {
-        outputBuffer.read(buffer.getArrayOfWritePointers(), buffer.getNumSamples(), buffer.getNumSamples());
+        outputBuffer.read(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(), buffer.getNumSamples());
     }
 }
 

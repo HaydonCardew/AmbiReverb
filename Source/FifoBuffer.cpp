@@ -24,24 +24,27 @@ void FifoBuffer::resize(unsigned nChannels, unsigned size)
     tail = 0;
 }
 
-void FifoBuffer::write(const AudioChunk& data, unsigned nSamplesToWrite, unsigned nSamplesToOverlap)
+void FifoBuffer::write(const AudioChunk& data, unsigned nChannels, unsigned nSamplesToWrite, unsigned nSamplesToOverlap)
 {
     assert(data.size() >= buffer.size());
     assert(data[0].size() >= nSamplesToWrite);
-    vector<const float*> ptrs(buffer.size());
-    for (int i = 0; i < buffer.size(); ++i )
+    assert(nChannels <= buffer.size());
+    assert(nChannels <= data.size());
+    vector<const float*> ptrs(nChannels);
+    for (int i = 0; i < nChannels; ++i )
     {
         ptrs[i] = data[i].data();
     }
     write(ptrs.data(), nSamplesToWrite, nSamplesToOverlap);
 }
 
-void FifoBuffer::write(const float** data, unsigned nSamplesToWrite, unsigned nSamplesToOverlap)
+void FifoBuffer::write(const float** data, unsigned nChannels, unsigned nSamplesToWrite, unsigned nSamplesToOverlap)
 {
     assert(nSamplesToWrite >= nSamplesToOverlap);
     assert(size() >= nSamplesToOverlap);
     assert((capacity() - size()) >= nSamplesToWrite);
-    for (int channel = 0; channel < buffer.size(); channel++)
+    assert(nChannels <= buffer.size());
+    for (int channel = 0; channel < nChannels; channel++)
     {
         int  h = (head - nSamplesToOverlap) & mask;
         int sample = 0;
@@ -60,23 +63,25 @@ void FifoBuffer::write(const float** data, unsigned nSamplesToWrite, unsigned nS
     head &= mask;
 }
 
-void FifoBuffer::read(AudioChunk& data, unsigned nSamplesToRead, unsigned nSamplesToClear)
+void FifoBuffer::read(AudioChunk& data, unsigned nChannels, unsigned nSamplesToRead, unsigned nSamplesToClear)
 {
     assert(data.size() >= buffer.size());
     assert(data[0].size() >= nSamplesToRead);
-    vector<float*> ptrs(buffer.size());
-    for (int i = 0; i < buffer.size(); ++i )
+    assert(nChannels <= buffer.size());
+    assert(nChannels <= data.size());
+    vector<float*> ptrs(nChannels);
+    for (int i = 0; i < nChannels; ++i )
     {
         ptrs[i] = data[i].data();
     }
-    read(ptrs.data(), nSamplesToRead, nSamplesToClear);
+    read(ptrs.data(), nChannels, nSamplesToRead, nSamplesToClear);
 }
 
-void FifoBuffer::read(float** data, unsigned nSamplesToRead, unsigned nSamplesToClear)
+void FifoBuffer::read(float** data, unsigned nChannels, unsigned nSamplesToRead, unsigned nSamplesToClear)
 {
     assert(size() >= nSamplesToRead);
     assert(nSamplesToRead >= nSamplesToClear);
-    for (int channel = 0; channel < buffer.size(); channel++)
+    for (int channel = 0; channel < nChannels; channel++)
     {
         int  t = tail;
         for (int sample = 0; sample < nSamplesToRead; ++sample)

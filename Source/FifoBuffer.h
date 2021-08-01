@@ -24,11 +24,13 @@ public:
     bool empty();
     unsigned size();
     bool full();
-    void write(const AudioChunk& data, unsigned nSamplesToWrite, unsigned nSamplesToOverlap=0);
-    void write(const float** data, unsigned nSamplesToWrite, unsigned nSamplesToOverlap=0);
+    // these will read/write silence if less channels are supplied than in the buffer..  maybe okay
+    void write(const AudioChunk& data, unsigned nChannels, unsigned nSamplesToWrite, unsigned nSamplesToOverlap=0);
+    void write(const float** data, unsigned nChannels, unsigned nSamplesToWrite, unsigned nSamplesToOverlap=0);
     
-    void read(AudioChunk& data, unsigned nSamplesToRead, unsigned nSamplesToClear);
-    void read(float** data, unsigned nSamplesToRead, unsigned nSamplesToClear);
+    void read(AudioChunk& data, unsigned nChannels, unsigned nSamplesToRead, unsigned nSamplesToClear);
+    void read(float** data, unsigned nChannels, unsigned nSamplesToRead, unsigned nSamplesToClear);
+    
 private:
     vector<vector<float>> buffer; // just inherit!
     unsigned head;

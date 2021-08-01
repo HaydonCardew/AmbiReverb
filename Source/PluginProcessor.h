@@ -68,9 +68,9 @@ public:
     vector<string> getAvailPFormatSelections();
     void setPFormatConfig(string config);
     
-    static const int processBlockSize = 2048;
-    static const int maxAmbiOrder = 1;
-    static const int maxIrLengthMs = 4000;
+    const int processBlockSize = 2048;
+    const int maxAmbiOrder = 3;
+    const int maxIrLengthMs = 4000;
     int requiredNumIrChannels();
     int numberOfBFormatChannels();
     
