@@ -73,11 +73,12 @@ public:
     const int maxIrLengthMs = 4000;
     int requiredNumIrChannels();
     int numberOfBFormatChannels();
-    
+    void updateAmbisonicOrder();
     bool hasImpulseResponse();
     
     AudioProcessorValueTreeState valueTree;
     
+    string getCurrentConfigName() { return currentConfigName; }
 private:
     
     FifoBuffer inputBuffer, outputBuffer;
@@ -85,11 +86,12 @@ private:
     
     vector<BFormatConvolution> convolution;
     PFormatConfigs configList;
+    string currentConfigName;
     HC::Matrix decodingMatrix;
     BufferTransfer bufferTransfer;
     
     bool loadedImpulseResponse;
-    
+    float ambiOrder;
     mutex processAudioLock;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbiReverbAudioProcessor)

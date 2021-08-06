@@ -10,16 +10,24 @@
 
 #include "Convolution.h"
 
-BFormatConvolution::BFormatConvolution(unsigned order)
+BFormatConvolution::BFormatConvolution(unsigned order, unsigned maxOrder) : maxOrder(maxOrder), activeChannels(pow(order+1, 2))
 {
     Convolution::NonUniform headSize;
     headSize.headSizeInSamples = 1024;
     convolution.clear();
-    const unsigned nChannels = pow(order+1, 2);
+    const unsigned nChannels = pow(maxOrder+1, 2);
     for (int i = 0; i < nChannels; ++i)
     {
         convolution.push_back(make_shared<Convolution>(headSize));
     }
+}
+
+void BFormatConvolution::setOrder(unsigned ambiOrder)
+{
+    assert(ambiOrder <= maxOrder);
+    activeChannels = pow(ambiOrder+1, 2);
+    reset();
+    //prepare90?
 }
 
 void BFormatConvolution::prepare(double sampleRate, unsigned int maximumBlockSize)
@@ -36,10 +44,10 @@ void BFormatConvolution::prepare(double sampleRate, unsigned int maximumBlockSiz
 
 void BFormatConvolution::loadImpulseResponse(ImpulseResponse&& audio, bool normalise)
 {
-    assert(audio.getNumChannels() == convolution.size());
+    assert(audio.getNumChannels() == activeChannels);
     Convolution::Normalise norm = normalise ? Convolution::Normalise::yes : Convolution::Normalise::no;
     float** ptrs = audio.getArrayOfWritePointers();
-    for ( int i = 0; i < convolution.size(); ++i)
+    for ( int i = 0; i < activeChannels; ++i)
     {
         convolution[i]->loadImpulseResponse(AudioBuffer<float>(ptrs + i, 1, 0, audio.getNumSamples()), audio.getSampleRate(), Convolution::Stereo::no, Convolution::Trim::yes, norm);// trim needed?
     }
@@ -48,11 +56,11 @@ void BFormatConvolution::loadImpulseResponse(ImpulseResponse&& audio, bool norma
 // Mono Input, BFormat Output
 void BFormatConvolution::process(vector<float>& input, vector<vector<float>>& output, const unsigned nSamples)
 {
-    assert(output.size() == convolution.size());
+    assert(output.size() >= activeChannels);
     assert(nSamples == processSpec.maximumBlockSize);
     assert(input.size() == nSamples);
 
-    for ( int i = 0; i < output.size(); ++i)
+    for ( int i = 0; i < activeChannels; ++i)
     {
         float* const inPtr = input.data();
         AudioBlock<float> inputBlock (&inPtr, 1, nSamples);

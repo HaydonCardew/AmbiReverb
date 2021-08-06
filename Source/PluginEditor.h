@@ -32,13 +32,13 @@ private:
     juce::TextButton fileButton;
     juce::FileChooser fileChooser;
     juce::AudioFormatManager formatManager;
-    juce::ComboBox pFormatSelector;
-    
     juce::Label inputChannelCount;
     juce::Label outputChannelCount;
     juce::Label irLoaded;
     
-    unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> pFormatSelectorAttachment;
+    
+    juce::ComboBox pFormatSelector, ambiOrderSelector;
+    unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> pFormatSelectorAttachment, ambiOrderSelectorAttachment;
     
     void updateChannelCountInformation();
     void updateIRLoadedInformation();

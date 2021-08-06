@@ -69,11 +69,27 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
     {
         pFormatSelector.addItem (selections[i], i+1);
     }
-    pFormatSelector.onChange = [this] { audioProcessor.setPFormatConfig(pFormatSelector.getText().toStdString()); }; //  this would be safer via IDs
+    //  this would be safer via IDs
     atomic<float>* selectorValue = audioProcessor.valueTree.getRawParameterValue(P_FORMAT_SELECTOR_ID);
     float selection = (*selectorValue * (selections.size()-1)) + 1; // scale 0->1 to 1->selections.size()
-    pFormatSelector.setSelectedId(selection);
+    pFormatSelector.setSelectedId(selection); // do this before the 'on change' else we'll call it unintentionally
+    //pFormatSelector.setText(audioProcessor.getCurrentConfigName()); // this is shocking
+    pFormatSelector.onChange = [this] { audioProcessor.setPFormatConfig(pFormatSelector.getText().toStdString()); };
     
+    
+    ambiOrderSelectorAttachment = make_unique<AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.valueTree, ORDER_SELECTOR_ID, ambiOrderSelector);
+    vector<string> orderSelections{"1st Order", "2nd Order", "3rd Order"};
+    assert(orderSelections.size() == audioProcessor.maxAmbiOrder); // change this
+    for (int i = 0; i < orderSelections.size(); ++i)
+    {
+        ambiOrderSelector.addItem (orderSelections[i], i+1);
+    }
+    atomic<float>* ambiSelectorValue = audioProcessor.valueTree.getRawParameterValue(ORDER_SELECTOR_ID);
+    ambiOrderSelector.setSelectedId(*ambiSelectorValue);
+    //pFormatSelector.setText(audioProcessor.getCurrentConfigName()); // this is shocking
+    ambiOrderSelector.onChange = [this] { audioProcessor.updateAmbisonicOrder(); };
+    
+    addAndMakeVisible(ambiOrderSelector);
     addAndMakeVisible(pFormatSelector);
     addAndMakeVisible(inputChannelCount);
     addAndMakeVisible(outputChannelCount);
@@ -146,7 +162,8 @@ void AmbiReverbAudioProcessorEditor::resized()
     // subcomponents in your editor..
     fileButton.setBoundsRelative (0.1, 0.1, 0.6, 0.2);
     pFormatSelector.setBoundsRelative (0.1, 0.3, 0.6, 0.2);
-    irLoaded.setBoundsRelative (0.1, 0.5, 0.6, 0.1);
-    inputChannelCount.setBoundsRelative (0.1, 0.6, 0.6, 0.1);
-    outputChannelCount.setBoundsRelative (0.1, 0.7, 0.6, 0.1);
+    ambiOrderSelector.setBoundsRelative (0.1, 0.5, 0.6, 0.2);
+    irLoaded.setBoundsRelative (0.1, 0.7, 0.6, 0.1);
+    inputChannelCount.setBoundsRelative (0.1, 0.8, 0.6, 0.1);
+    outputChannelCount.setBoundsRelative (0.1, 0.9, 0.6, 0.1);
 }

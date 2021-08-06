@@ -26,7 +26,7 @@ void FifoBuffer::resize(unsigned nChannels, unsigned size)
 
 void FifoBuffer::write(const AudioChunk& data, unsigned nChannels, unsigned nSamplesToWrite, unsigned nSamplesToOverlap)
 {
-    assert(data.size() >= buffer.size());
+    assert(data.size() >= nChannels);
     assert(data[0].size() >= nSamplesToWrite);
     assert(nChannels <= buffer.size());
     assert(nChannels <= data.size());
@@ -35,7 +35,7 @@ void FifoBuffer::write(const AudioChunk& data, unsigned nChannels, unsigned nSam
     {
         ptrs[i] = data[i].data();
     }
-    write(ptrs.data(), nSamplesToWrite, nSamplesToOverlap);
+    write(ptrs.data(), nChannels, nSamplesToWrite, nSamplesToOverlap);
 }
 
 void FifoBuffer::write(const float** data, unsigned nChannels, unsigned nSamplesToWrite, unsigned nSamplesToOverlap)
@@ -65,7 +65,7 @@ void FifoBuffer::write(const float** data, unsigned nChannels, unsigned nSamples
 
 void FifoBuffer::read(AudioChunk& data, unsigned nChannels, unsigned nSamplesToRead, unsigned nSamplesToClear)
 {
-    assert(data.size() >= buffer.size());
+    //assert(data.size() >= buffer.size()); // other way round?
     assert(data[0].size() >= nSamplesToRead);
     assert(nChannels <= buffer.size());
     assert(nChannels <= data.size());

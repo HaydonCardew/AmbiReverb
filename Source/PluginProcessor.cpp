@@ -25,15 +25,16 @@ valueTree(*this, nullptr, "ValueTree",
 {
     make_unique<AudioParameterFloat>(P_FORMAT_SELECTOR_ID, P_FORMAT_SELECTOR_NAME, 0.0, 1.0, 0.0),
     make_unique<AudioParameterFloat>(ORDER_SELECTOR_ID, ORDER_SELECTOR_NAME, 1.0, maxAmbiOrder, 1.0)
-})
+}), currentConfigName("T Design (4)"), ambiOrder(0)
 {
-    atomic<float>* ambiOrder = valueTree.getRawParameterValue(ORDER_SELECTOR_ID);
-    decodingMatrix = configList.getDecodingCoefs("T Design (4)", *ambiOrder);
+    /*ambiOrder = valueTree.getRawParameterValue(ORDER_SELECTOR_ID);
+    decodingMatrix = configList.getDecodingCoefs(currentConfigName, *ambiOrder);
+    bFormatChunk.resize(numberOfBFormatChannels(), vector<float>(processBlockSize));*/
+    updateAmbisonicOrder();
     
-    int maxBFormatChannels = pow(maxAmbiOrder+1, 2);
     // these get multiplied so changing sizes is an issue...
-    bFormatChunk.resize(maxBFormatChannels, vector<float>(processBlockSize));
     pFormatChunk.resize(configList.getMaxChannels(), vector<float>(processBlockSize));
+    int maxBFormatChannels = pow(maxAmbiOrder+1, 2);
     transferChunk.resize(maxBFormatChannels, vector<float>(processBlockSize));
     
     inputBuffer.resize(maxBFormatChannels, processBlockSize * 2); // these may be an issue as they'll get out of sync?
@@ -42,8 +43,26 @@ valueTree(*this, nullptr, "ValueTree",
     convolution.clear();
     for (int i = 0; i < configList.getMaxChannels(); ++i)
     {
-        convolution.push_back(BFormatConvolution(maxAmbiOrder));
+        convolution.push_back(BFormatConvolution(ambiOrder, maxAmbiOrder));
     }
+}
+
+void AmbiReverbAudioProcessor::updateAmbisonicOrder()
+{
+    atomic<float>* newAmbiOrder = valueTree.getRawParameterValue(ORDER_SELECTOR_ID);
+    if (ambiOrder == *newAmbiOrder)
+    {
+        return;
+    }
+    ambiOrder = *newAmbiOrder;
+    decodingMatrix = configList.getDecodingCoefs(currentConfigName, ambiOrder);
+    bFormatChunk.resize(numberOfBFormatChannels(), vector<float>(processBlockSize)); // allow these to change in realtime?
+    for (auto & conv : convolution)
+    {
+        conv.setOrder(ambiOrder);
+    }
+    //pFormatChunk.resize(configList.getMaxChannels(), vector<float>(processBlockSize));
+    //transferChunk.resize(*ambiOrder, vector<float>(processBlockSize));
 }
 
 AmbiReverbAudioProcessor::~AmbiReverbAudioProcessor()
@@ -172,7 +191,8 @@ bool AmbiReverbAudioProcessor::hasImpulseResponse()
 
 int AmbiReverbAudioProcessor::numberOfBFormatChannels()
 {
-    return pow(*valueTree.getRawParameterValue(ORDER_SELECTOR_ID)+1, 2);
+    //return pow(*valueTree.getRawParameterValue(ORDER_SELECTOR_ID)+1, 2);
+    return pow(ambiOrder+1, 2);
 }
 
 vector<string> AmbiReverbAudioProcessor::getAvailPFormatSelections()
@@ -182,8 +202,12 @@ vector<string> AmbiReverbAudioProcessor::getAvailPFormatSelections()
 
 void AmbiReverbAudioProcessor::setPFormatConfig(string config)
 {
-    // this needs to be thread safe (and more!)
+    if (currentConfigName == config)
+    {
+        return;
+    }
     lock_guard<mutex> guard (processAudioLock);
+    currentConfigName = config;
     decodingMatrix = configList.getDecodingCoefs (config, *valueTree.getRawParameterValue(ORDER_SELECTOR_ID));
     for (auto & conv : convolution)
     {
