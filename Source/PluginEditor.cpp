@@ -117,13 +117,13 @@ void AmbiReverbAudioProcessorEditor::updateChannelCountInformation()
     stringstream inputs;
     inputs << "Input Channels: " << in << "/" << required;
     inputChannelCount.setText(inputs.str(), dontSendNotification);
-    inputChannelCount.setColour(Label::textColourId, in == required ? Colours::white : Colours::red);
+    inputChannelCount.setColour(Label::textColourId, in >= required ? Colours::white : Colours::red);
     
     int out = audioProcessor.getTotalNumOutputChannels();
     stringstream outputs;
     outputs << "Output Channels: " << out << "/" << required;
     outputChannelCount.setText(outputs.str(), dontSendNotification);
-    outputChannelCount.setColour(Label::textColourId, out == required ? Colours::white : Colours::red);
+    outputChannelCount.setColour(Label::textColourId, out >= required ? Colours::white : Colours::red);
 }
 
 void AmbiReverbAudioProcessorEditor::updateIRLoadedInformation()

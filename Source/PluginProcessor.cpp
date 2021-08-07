@@ -230,10 +230,12 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         loadedImpulseResponse = true;
     });
     
-    if (getTotalNumInputChannels() != numberOfBFormatChannels() || getTotalNumOutputChannels() != numberOfBFormatChannels() || !loadedImpulseResponse)
+    if (getTotalNumInputChannels() < numberOfBFormatChannels() || getTotalNumOutputChannels() < numberOfBFormatChannels() || !loadedImpulseResponse)
     {
         return;
     }
+    
+    // if there are extra channels then clear them and don't use them
     
     inputBuffer.write(buffer.getArrayOfReadPointers(), buffer.getNumChannels(), buffer.getNumSamples());
     
