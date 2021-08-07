@@ -70,6 +70,7 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
         pFormatSelector.addItem (selections[i], i+1);
     }
     //  this would be safer via IDs
+    pFormatSelector.setJustificationType(Justification::centred);
     atomic<float>* selectorValue = audioProcessor.valueTree.getRawParameterValue(P_FORMAT_SELECTOR_ID);
     float selection = (*selectorValue * (selections.size()-1)) + 1; // scale 0->1 to 1->selections.size()
     pFormatSelector.setSelectedId(selection); // do this before the 'on change' else we'll call it unintentionally
@@ -79,11 +80,12 @@ AmbiReverbAudioProcessorEditor::AmbiReverbAudioProcessorEditor (AmbiReverbAudioP
     
     ambiOrderSelectorAttachment = make_unique<AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.valueTree, ORDER_SELECTOR_ID, ambiOrderSelector);
     vector<string> orderSelections{"1st Order", "2nd Order", "3rd Order"};
-    assert(orderSelections.size() == audioProcessor.maxAmbiOrder); // change this
-    for (int i = 0; i < orderSelections.size(); ++i)
+    assert(orderSelections.size() >= audioProcessor.maxAmbiOrder); // change this
+    for (int i = 0; i < audioProcessor.maxAmbiOrder; ++i)
     {
         ambiOrderSelector.addItem (orderSelections[i], i+1);
     }
+    ambiOrderSelector.setJustificationType(Justification::centred);
     atomic<float>* ambiSelectorValue = audioProcessor.valueTree.getRawParameterValue(ORDER_SELECTOR_ID);
     ambiOrderSelector.setSelectedId(*ambiSelectorValue);
     //pFormatSelector.setText(audioProcessor.getCurrentConfigName()); // this is shocking
