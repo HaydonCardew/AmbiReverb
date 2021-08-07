@@ -190,7 +190,6 @@ bool AmbiReverbAudioProcessor::hasImpulseResponse()
 
 int AmbiReverbAudioProcessor::numberOfBFormatChannels()
 {
-    //return pow(*valueTree.getRawParameterValue(ORDER_SELECTOR_ID)+1, 2);
     return pow(ambiOrder+1, 2);
 }
 
@@ -236,6 +235,10 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     }
     
     // if there are extra channels then clear them and don't use them
+    for (int i = numberOfBFormatChannels(); i < buffer.getNumChannels(); ++i)
+    {
+        buffer.clear(i, 0, buffer.getNumSamples());
+    }
     
     inputBuffer.write(buffer.getArrayOfReadPointers(), buffer.getNumChannels(), buffer.getNumSamples());
     
