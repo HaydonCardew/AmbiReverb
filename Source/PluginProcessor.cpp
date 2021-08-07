@@ -55,14 +55,13 @@ void AmbiReverbAudioProcessor::updateAmbisonicOrder()
         return;
     }
     ambiOrder = *newAmbiOrder;
+    lock_guard<mutex> guard (processAudioLock);
     decodingMatrix = configList.getDecodingCoefs(currentConfigName, ambiOrder);
     bFormatChunk.resize(numberOfBFormatChannels(), vector<float>(processBlockSize)); // allow these to change in realtime?
     for (auto & conv : convolution)
     {
         conv.setOrder(ambiOrder);
     }
-    //pFormatChunk.resize(configList.getMaxChannels(), vector<float>(processBlockSize));
-    //transferChunk.resize(*ambiOrder, vector<float>(processBlockSize));
 }
 
 AmbiReverbAudioProcessor::~AmbiReverbAudioProcessor()
@@ -206,14 +205,14 @@ void AmbiReverbAudioProcessor::setPFormatConfig(string config)
     {
         return;
     }
-    lock_guard<mutex> guard (processAudioLock);
+    loadedImpulseResponse = false;
     currentConfigName = config;
+    lock_guard<mutex> guard (processAudioLock);
     decodingMatrix = configList.getDecodingCoefs (config, *valueTree.getRawParameterValue(ORDER_SELECTOR_ID));
     for (auto & conv : convolution)
     {
         conv.reset();
     }
-    loadedImpulseResponse = false;
 }
 
 void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
@@ -244,8 +243,8 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     {
         inputBuffer.read(bFormatChunk, bFormatChunk.getNumChannels(), processBlockSize, processBlockSize);
         pFormatChunk.zeroSamples();
-        //decodingMatrix.multiply(bFormatChunk, pFormatChunk);
-        bFormatChunk.multiply(decodingMatrix, pFormatChunk);
+        decodingMatrix.multiply(bFormatChunk, pFormatChunk);
+        //bFormatChunk.multiply(decodingMatrix, pFormatChunk);
         bFormatChunk.zeroSamples(); // probably dont need
         for (int channel = 0; channel < decodingMatrix.size(); ++channel) //don't do it by pFormatChunk channels! set that to max at start
         {

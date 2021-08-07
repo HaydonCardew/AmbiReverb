@@ -83,8 +83,8 @@ HC::Matrix HC::Matrix::multiply(float scalar) const
 
 void HC::Matrix::multiply(const Matrix& input, Matrix& output) const
 {
-    assert(numRows() == input.numColumns());
-    //assert(numColumns() == input.numRows());
+    //assert(numRows() == input.numColumns());
+    assert(numColumns() == input.numRows());
     assert(output.numRows() >= numRows() && output.numColumns() >= input.numColumns());
     for (int row = 0; row < numRows(); ++row)
     {
