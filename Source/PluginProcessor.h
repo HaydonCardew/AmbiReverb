@@ -65,16 +65,16 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     void loadImpulseResponse(unique_ptr<juce::AudioFormatReader> reader);
-    vector<string> getAvailPFormatSelections();
+    vector<string> getAvailPFormatSelections() const;
     void setPFormatConfig(string config);
     
     const int processBlockSize = 2048;
     const int maxAmbiOrder = 3;
     const int maxIrLengthMs = 4000;
-    int requiredNumIrChannels();
-    int numberOfBFormatChannels();
+    int requiredNumIrChannels() const;
+    int numberOfBFormatChannels() const;
+    bool hasImpulseResponse() const;
     void updateAmbisonicOrder();
-    bool hasImpulseResponse();
     
     AudioProcessorValueTreeState valueTree;
     

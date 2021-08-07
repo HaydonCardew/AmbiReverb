@@ -72,7 +72,7 @@ void PFormatConfigs::constructConfigs()
     configs.push_back(T_Design_12);
 }
 
-vector<string> PFormatConfigs::getConfigsNames()
+vector<string> PFormatConfigs::getConfigsNames() const
 {
     vector<string> names(configs.size());
     for (int i = 0; i < configs.size(); ++i)
@@ -82,7 +82,7 @@ vector<string> PFormatConfigs::getConfigsNames()
     return names;
 }
 
-int PFormatConfigs::getMaxChannels()
+int PFormatConfigs::getMaxChannels() const
 {
     int maxChannels = 0;
     for (auto & config : configs)
@@ -95,7 +95,7 @@ int PFormatConfigs::getMaxChannels()
     return maxChannels;
 }
 
-HC::Matrix PFormatConfigs::getDecodingCoefs(const string name)
+HC::Matrix PFormatConfigs::getDecodingCoefs(const string name) const
 {
     for (auto & config : configs)
     {
@@ -108,7 +108,7 @@ HC::Matrix PFormatConfigs::getDecodingCoefs(const string name)
     return configs[0].getDecodingCoefs();
 }
 
-HC::Matrix PFormatConfigs::getDecodingCoefs(const string name, unsigned ambiOrder)
+HC::Matrix PFormatConfigs::getDecodingCoefs(const string name, unsigned ambiOrder) const
 {
     const unsigned nChannels = pow(ambiOrder+1, 2);
     HC::Matrix decodingCoefs(getDecodingCoefs(name));
@@ -125,7 +125,7 @@ string PFormatConfig::getName() const
     return name;
 }
 
-bool PFormatConfig::checkCoefsAreInverse()
+bool PFormatConfig::checkCoefsAreInverse() const
 {
     HC::Matrix identity = HC::Matrix::getIdentity(getNumChannels());
     HC::Matrix check = encodingCoefs.multiply(decodingCoefs).subtract(identity);

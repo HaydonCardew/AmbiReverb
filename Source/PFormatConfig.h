@@ -87,17 +87,17 @@ public:
         //assert(checkCoefsAreInverse());
     }
     
-    unsigned getNumChannels()
+    unsigned getNumChannels() const
     {
         return static_cast<unsigned>(microphonePositions.size());
     }
     
-    HC::Matrix getDecodingCoefs()
+    HC::Matrix getDecodingCoefs() const
     {
         return decodingCoefs;
     }
     
-    HC::Matrix getEncodingCoefs()
+    HC::Matrix getEncodingCoefs() const
     {
         return encodingCoefs;
     }
@@ -105,7 +105,7 @@ public:
     string getName() const;
 private:
     const vector<MicrophonePosition> microphonePositions;
-    bool checkCoefsAreInverse ();
+    bool checkCoefsAreInverse() const;
     HC::Matrix decodingCoefs;
     HC::Matrix encodingCoefs;
     string name;
@@ -115,10 +115,10 @@ struct PFormatConfigs
 {
 public:
     PFormatConfigs();
-    int getMaxChannels();
-    vector<string> getConfigsNames();
-    HC::Matrix getDecodingCoefs(const string name);
-    HC::Matrix getDecodingCoefs(const string name, unsigned ambiOrder);
+    int getMaxChannels() const;
+    vector<string> getConfigsNames() const;
+    HC::Matrix getDecodingCoefs(const string name) const;
+    HC::Matrix getDecodingCoefs(const string name, unsigned ambiOrder) const;
 private:
     void constructConfigs();
     vector<PFormatConfig> configs;

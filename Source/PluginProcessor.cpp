@@ -68,7 +68,7 @@ AmbiReverbAudioProcessor::~AmbiReverbAudioProcessor()
 {
 }
 
-int AmbiReverbAudioProcessor::requiredNumIrChannels()
+int AmbiReverbAudioProcessor::requiredNumIrChannels() const
 {
     return static_cast<int>(decodingMatrix[0].size()) * numberOfBFormatChannels();
 }
@@ -183,17 +183,17 @@ void AmbiReverbAudioProcessor::loadImpulseResponse(unique_ptr<juce::AudioFormatR
     // Don't set loadedImpulseResponse here. Set it in audio thread as that's where it is actually loaded
 }
 
-bool AmbiReverbAudioProcessor::hasImpulseResponse()
+bool AmbiReverbAudioProcessor::hasImpulseResponse() const
 {
     return loadedImpulseResponse;
 }
 
-int AmbiReverbAudioProcessor::numberOfBFormatChannels()
+int AmbiReverbAudioProcessor::numberOfBFormatChannels() const
 {
     return pow(ambiOrder+1, 2);
 }
 
-vector<string> AmbiReverbAudioProcessor::getAvailPFormatSelections()
+vector<string> AmbiReverbAudioProcessor::getAvailPFormatSelections() const
 {
     return configList.getConfigsNames();
 }
