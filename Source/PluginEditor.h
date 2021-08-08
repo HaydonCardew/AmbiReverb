@@ -28,15 +28,18 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     AmbiReverbAudioProcessor& audioProcessor;
-    void selectImpulseResponse();
-    juce::TextButton fileButton;
-    juce::FileChooser fileChooser;
+    
+    void createFileSelectButton();
+    juce::TextButton fileSelectButton;
+    shared_ptr<juce::FileChooser> fileChooser;
     juce::AudioFormatManager formatManager;
+    
     juce::Label inputChannelCount;
     juce::Label outputChannelCount;
     juce::Label irLoaded;
     
-    
+    void createPFormatSelectMenu();
+    void createAmbiOrderSelectMenu();
     juce::ComboBox pFormatSelector, ambiOrderSelector;
     unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> pFormatSelectorAttachment, ambiOrderSelectorAttachment;
     

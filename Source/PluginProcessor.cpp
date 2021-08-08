@@ -249,7 +249,6 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         inputBuffer.read(bFormatChunk, bFormatChunk.getNumChannels(), processBlockSize, processBlockSize);
         pFormatChunk.zeroSamples();
         decodingMatrix.multiply(bFormatChunk, pFormatChunk);
-        //bFormatChunk.multiply(decodingMatrix, pFormatChunk);
         bFormatChunk.zeroSamples(); // probably dont need
         for (int channel = 0; channel < decodingMatrix.size(); ++channel) //don't do it by pFormatChunk channels! set that to max at start
         {
