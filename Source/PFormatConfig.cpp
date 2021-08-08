@@ -95,28 +95,18 @@ int PFormatConfigs::getMaxChannels() const
     return maxChannels;
 }
 
-HC::Matrix PFormatConfigs::getDecodingCoefs(const string name) const
+HC::Matrix PFormatConfigs::getDecodingCoefs(unsigned index) const
 {
-    for (auto & config : configs)
-    {
-        if (config.getName() == name)
-        {
-            return config.getDecodingCoefs();
-        }
-    }
-    assert(false); // this is hairy
-    return configs[0].getDecodingCoefs();
+    assert(index < configs.size());
+    return configs[index].getDecodingCoefs();
 }
 
-HC::Matrix PFormatConfigs::getDecodingCoefs(const string name, unsigned ambiOrder) const
+HC::Matrix PFormatConfigs::getDecodingCoefs(unsigned index, unsigned ambiOrder) const
 {
     const unsigned nChannels = pow(ambiOrder+1, 2);
-    HC::Matrix decodingCoefs(getDecodingCoefs(name));
+    HC::Matrix decodingCoefs(getDecodingCoefs(index));
     assert(decodingCoefs.size() >= nChannels);
-    while(decodingCoefs.size() > nChannels)
-    {
-        decodingCoefs.pop_back();
-    }
+    decodingCoefs.resize(nChannels);
     return decodingCoefs;
 }
 

@@ -66,7 +66,7 @@ public:
 
     void loadImpulseResponse(unique_ptr<juce::AudioFormatReader> reader);
     vector<string> getAvailPFormatSelections() const;
-    void setPFormatConfig(string config);
+    void setPFormatConfig(int configIndex);
     
     const int processBlockSize = 2048;
     const int maxAmbiOrder = 3;
@@ -78,7 +78,7 @@ public:
     
     AudioProcessorValueTreeState valueTree;
     
-    string getCurrentConfigName() { return currentConfigName; }
+    int getCurrentConfigIndex() { return currentConfigIndex; }
 private:
     
     FifoBuffer inputBuffer, outputBuffer;
@@ -86,7 +86,7 @@ private:
     
     vector<BFormatConvolution> convolution;
     PFormatConfigs configList;
-    string currentConfigName;
+    int currentConfigIndex;
     HC::Matrix decodingMatrix;
     BufferTransfer bufferTransfer;
     

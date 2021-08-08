@@ -117,8 +117,10 @@ public:
     PFormatConfigs();
     int getMaxChannels() const;
     vector<string> getConfigsNames() const;
-    HC::Matrix getDecodingCoefs(const string name) const;
-    HC::Matrix getDecodingCoefs(const string name, unsigned ambiOrder) const;
+    /*HC::Matrix getDecodingCoefs(const string name) const;
+    HC::Matrix getDecodingCoefs(const string name, unsigned ambiOrder) const;*/
+    HC::Matrix getDecodingCoefs(unsigned index) const;
+    HC::Matrix getDecodingCoefs(unsigned index, unsigned ambiOrder) const;
 private:
     void constructConfigs();
     vector<PFormatConfig> configs;

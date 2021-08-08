@@ -46,14 +46,13 @@ void AmbiReverbAudioProcessorEditor::createPFormatSelectMenu()
     vector<string> selections = audioProcessor.getAvailPFormatSelections();
     for (int i = 0; i < selections.size(); ++i)
     {
-        pFormatSelector.addItem (selections[i], i+1);
+        pFormatSelector.addItem (selections[i], i+1); // ID's can't be 0
     }
-    //  this would be safer via IDs
     pFormatSelector.setJustificationType(Justification::centred);
     atomic<float>* selectorValue = audioProcessor.valueTree.getRawParameterValue(P_FORMAT_SELECTOR_ID);
     float selection = (*selectorValue * (selections.size()-1)) + 1; // scale 0->1 to 1->selections.size()
     pFormatSelector.setSelectedId(selection);
-    pFormatSelector.onChange = [this] { audioProcessor.setPFormatConfig(pFormatSelector.getText().toStdString()); };
+    pFormatSelector.onChange = [this] { audioProcessor.setPFormatConfig(pFormatSelector.getSelectedId() - 1); }; // -1 due to ID starting from 1
     addAndMakeVisible(pFormatSelector);
 }
 

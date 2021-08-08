@@ -25,12 +25,12 @@ valueTree(*this, nullptr, "ValueTree",
 {
     make_unique<AudioParameterFloat>(P_FORMAT_SELECTOR_ID, P_FORMAT_SELECTOR_NAME, 0.0, 1.0, 0.0),
     make_unique<AudioParameterFloat>(ORDER_SELECTOR_ID, ORDER_SELECTOR_NAME, 1.0, maxAmbiOrder, 1.0)
-}), currentConfigName("T Design (4)")
+}), currentConfigIndex(0)
 {
     /*ambiOrder = valueTree.getRawParameterValue(ORDER_SELECTOR_ID);
     decodingMatrix = configList.getDecodingCoefs(currentConfigName, *ambiOrder);
     bFormatChunk.resize(numberOfBFormatChannels(), vector<float>(processBlockSize));*/
-    updateAmbisonicOrder();
+    updateAmbisonicOrder(true);
     
     // these get multiplied so changing sizes is an issue...
     pFormatChunk.resize(configList.getMaxChannels(), vector<float>(processBlockSize));
@@ -56,7 +56,7 @@ void AmbiReverbAudioProcessor::updateAmbisonicOrder(bool forceRefresh)
     }
     ambiOrder = *newAmbiOrder;
     lock_guard<mutex> guard (processAudioLock);
-    decodingMatrix = configList.getDecodingCoefs(currentConfigName, ambiOrder);
+    decodingMatrix = configList.getDecodingCoefs(currentConfigIndex, ambiOrder);
     bFormatChunk.resize(numberOfBFormatChannels(), vector<float>(processBlockSize)); // allow these to change in realtime?
     for (auto & conv : convolution)
     {
@@ -200,16 +200,16 @@ vector<string> AmbiReverbAudioProcessor::getAvailPFormatSelections() const
     return configList.getConfigsNames();
 }
 
-void AmbiReverbAudioProcessor::setPFormatConfig(string config)
+void AmbiReverbAudioProcessor::setPFormatConfig(int configIndex)
 {
-    if (currentConfigName == config)
+    if (currentConfigIndex == configIndex)
     {
         return;
     }
     loadedImpulseResponse = false;
-    currentConfigName = config;
+    currentConfigIndex = configIndex;
     lock_guard<mutex> guard (processAudioLock);
-    decodingMatrix = configList.getDecodingCoefs (config, ambiOrder);
+    decodingMatrix = configList.getDecodingCoefs (currentConfigIndex, ambiOrder);
     for (auto & conv : convolution)
     {
         conv.reset();
