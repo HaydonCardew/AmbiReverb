@@ -138,6 +138,8 @@ void AmbiReverbAudioProcessor::changeProgramName (int index, const juce::String&
 //==============================================================================
 void AmbiReverbAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    inputBuffer.clear();
+    outputBuffer.clear();
     for (auto & conv : convolution)
     {
         conv.reset();
@@ -218,9 +220,8 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 {
     juce::ScopedNoDenormals noDenormals;
     
-    bufferTransfer.get ([this] (ImpulseResponse& ir) // ir = bFromatchannels * pFormatChannels.
+    bufferTransfer.get ([this] (ImpulseResponse& ir)
     {
-        //assert(decodingMatrix.size() == convolution.size()); // nope, to save creating more convs I initalise the maximum straight away
         for (int i = 0; i < decodingMatrix.size(); ++i)
         {
             int startChannel = i * numberOfBFormatChannels();
