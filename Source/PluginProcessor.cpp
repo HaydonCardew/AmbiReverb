@@ -27,17 +27,13 @@ valueTree(*this, nullptr, "ValueTree",
     make_unique<AudioParameterFloat>(ORDER_SELECTOR_ID, ORDER_SELECTOR_NAME, 1.0, maxAmbiOrder, 1.0)
 }), currentConfigIndex(0)
 {
-    /*ambiOrder = valueTree.getRawParameterValue(ORDER_SELECTOR_ID);
-    decodingMatrix = configList.getDecodingCoefs(currentConfigName, *ambiOrder);
-    bFormatChunk.resize(numberOfBFormatChannels(), vector<float>(processBlockSize));*/
     updateAmbisonicOrder(true);
-    
-    // these get multiplied so changing sizes is an issue...
+    setPFormatConfig(currentConfigIndex);
     pFormatChunk.resize(configList.getMaxChannels(), vector<float>(processBlockSize));
     int maxBFormatChannels = pow(maxAmbiOrder+1, 2);
     transferChunk.resize(maxBFormatChannels, vector<float>(processBlockSize));
     
-    inputBuffer.resize(maxBFormatChannels, processBlockSize * 2); // these may be an issue as they'll get out of sync?
+    inputBuffer.resize(maxBFormatChannels, processBlockSize * 2);
     outputBuffer.resize(maxBFormatChannels, processBlockSize * 2);
     
     convolution.clear();
