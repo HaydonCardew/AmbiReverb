@@ -69,7 +69,6 @@ void AmbiReverbAudioProcessorEditor::createAmbiOrderSelectMenu()
     ambiOrderSelector.setJustificationType(Justification::centred);
     atomic<float>* ambiSelectorValue = audioProcessor.valueTree.getRawParameterValue(ORDER_SELECTOR_ID);
     ambiOrderSelector.setSelectedId(*ambiSelectorValue);
-    //pFormatSelector.setText(audioProcessor.getCurrentConfigName()); // this is shocking
     ambiOrderSelector.onChange = [this] { audioProcessor.updateAmbisonicOrder(); };
     addAndMakeVisible(ambiOrderSelector);
 }

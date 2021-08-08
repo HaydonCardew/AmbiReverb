@@ -74,7 +74,7 @@ public:
     int requiredNumIrChannels() const;
     int numberOfBFormatChannels() const;
     bool hasImpulseResponse() const;
-    void updateAmbisonicOrder();
+    void updateAmbisonicOrder (bool forceRefresh = false);
     
     AudioProcessorValueTreeState valueTree;
     

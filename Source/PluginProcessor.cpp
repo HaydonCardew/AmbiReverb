@@ -25,7 +25,7 @@ valueTree(*this, nullptr, "ValueTree",
 {
     make_unique<AudioParameterFloat>(P_FORMAT_SELECTOR_ID, P_FORMAT_SELECTOR_NAME, 0.0, 1.0, 0.0),
     make_unique<AudioParameterFloat>(ORDER_SELECTOR_ID, ORDER_SELECTOR_NAME, 1.0, maxAmbiOrder, 1.0)
-}), currentConfigName("T Design (4)"), ambiOrder(0)
+}), currentConfigName("T Design (4)")
 {
     /*ambiOrder = valueTree.getRawParameterValue(ORDER_SELECTOR_ID);
     decodingMatrix = configList.getDecodingCoefs(currentConfigName, *ambiOrder);
@@ -47,10 +47,10 @@ valueTree(*this, nullptr, "ValueTree",
     }
 }
 
-void AmbiReverbAudioProcessor::updateAmbisonicOrder()
+void AmbiReverbAudioProcessor::updateAmbisonicOrder(bool forceRefresh)
 {
     atomic<float>* newAmbiOrder = valueTree.getRawParameterValue(ORDER_SELECTOR_ID);
-    if (ambiOrder == *newAmbiOrder)
+    if (ambiOrder == *newAmbiOrder && !forceRefresh)
     {
         return;
     }
@@ -209,7 +209,7 @@ void AmbiReverbAudioProcessor::setPFormatConfig(string config)
     loadedImpulseResponse = false;
     currentConfigName = config;
     lock_guard<mutex> guard (processAudioLock);
-    decodingMatrix = configList.getDecodingCoefs (config, *valueTree.getRawParameterValue(ORDER_SELECTOR_ID));
+    decodingMatrix = configList.getDecodingCoefs (config, ambiOrder);
     for (auto & conv : convolution)
     {
         conv.reset();
