@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="U6S9IB" name="AmbiReverb" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
+              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
+              pluginManufacturer="HaydonCardew" pluginVST3Category="Reverb,Spatial,Surround">
   <MAINGROUP id="ajl4SI" name="AmbiReverb">
     <GROUP id="{B1A4D31E-1D19-C0CA-5592-5F01F6CD0182}" name="Source">
       <FILE id="DWDt2H" name="ImpulseResponse.cpp" compile="1" resource="0"
