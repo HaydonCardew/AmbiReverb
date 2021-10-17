@@ -1,13 +1,3 @@
-/*
-  ==============================================================================
-
-    Convolution.cpp
-    Created: 8 May 2021 3:42:54pm
-    Author:  Haydon Cardew
-
-  ==============================================================================
-*/
-
 #include "Convolution.h"
 
 BFormatConvolution::BFormatConvolution(unsigned order, unsigned maxOrder) : maxOrder(maxOrder), activeChannels(pow(order+1, 2))
@@ -27,7 +17,6 @@ void BFormatConvolution::setOrder(unsigned ambiOrder)
     assert(ambiOrder <= maxOrder);
     activeChannels = pow(ambiOrder+1, 2);
     reset();
-    //prepare90?
 }
 
 void BFormatConvolution::prepare(double sampleRate, unsigned int maximumBlockSize)

@@ -1,13 +1,3 @@
-/*
-  ==============================================================================
-
-    Convolution.h
-    Created: 8 May 2021 3:42:54pm
-    Author:  Haydon Cardew
-
-  ==============================================================================
-*/
-
 #pragma once
 #include "ImpulseResponse.h"
 #include <JuceHeader.h>

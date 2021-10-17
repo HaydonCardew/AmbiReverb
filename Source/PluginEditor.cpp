@@ -1,11 +1,3 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
-*/
-
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
@@ -144,20 +136,15 @@ AmbiReverbAudioProcessorEditor::~AmbiReverbAudioProcessorEditor()
 {
 }
 
-//==============================================================================
 void AmbiReverbAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
     g.setColour (juce::Colours::white);
     g.setFont (15.0f);
-    //g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
 }
 
 void AmbiReverbAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
     fileSelectButton.setBoundsRelative (0.1, 0.1, 0.6, 0.2);
     pFormatSelector.setBoundsRelative (0.1, 0.3, 0.6, 0.2);
     ambiOrderSelector.setBoundsRelative (0.1, 0.5, 0.6, 0.2);

@@ -1,11 +1,3 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin processor.
-
-  ==============================================================================
-*/
-
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
@@ -239,7 +231,7 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     
     inputBuffer.write(buffer.getArrayOfReadPointers(), buffer.getNumChannels(), buffer.getNumSamples());
     
-    lock_guard<mutex> guard(processAudioLock); // a lock in audio thread is possibly silly?
+    lock_guard<mutex> guard(processAudioLock); // a lock in audio thread is possibly stupid?
     
     if (inputBuffer.size() >= processBlockSize)
     {

@@ -1,13 +1,3 @@
-/*
-  ==============================================================================
-
-    AudioChunk.cpp
-    Created: 5 Jun 2021 12:43:32am
-    Author:  Haydon Cardew
-
-  ==============================================================================
-*/
-
 #include "AudioChunk.h"
 
 AudioChunk::AudioChunk(unsigned nChannels, unsigned nSamples) : Matrix(nChannels, nSamples)

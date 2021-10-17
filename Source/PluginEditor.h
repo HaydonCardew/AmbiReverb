@@ -1,19 +1,8 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
-*/
-
 #pragma once
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
-//==============================================================================
-/**
-*/
 class AmbiReverbAudioProcessorEditor  : public juce::AudioProcessorEditor, juce::Timer
 {
 public:
@@ -25,8 +14,6 @@ public:
     void resized() override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
     AmbiReverbAudioProcessor& audioProcessor;
     
     void createFileSelectButton();

@@ -23,8 +23,6 @@ public:
     // I think angles are couner-clockwise for some stupid reason?
     MicrophonePosition (float azimuth, float elevation) : azimuth(azimuth), elevation(elevation)
     {
-        //assert(0.f <= azimuth && azimuth <= 360.f);
-        //assert(0.f <= elevation && elevation <= 360.f);
         assert(-360.f <= azimuth && azimuth <= 360.f);
         assert(-360.f <= elevation && elevation <= 360.f);
     };
