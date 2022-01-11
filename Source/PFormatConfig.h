@@ -76,7 +76,7 @@ public:
     }
     
     PFormatConfig (string name, const vector<MicrophonePosition> microphonePositions, const HC::Matrix decodingCoefs)
-    : microphonePositions(microphonePositions), name(name), decodingCoefs(decodingCoefs)
+    : microphonePositions(microphonePositions), decodingCoefs(decodingCoefs), name(name)
     {
         for (auto & position : microphonePositions)
         {

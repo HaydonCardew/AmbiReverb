@@ -1,6 +1,6 @@
 #include "Convolution.h"
 
-BFormatConvolution::BFormatConvolution(unsigned order, unsigned maxOrder) : maxOrder(maxOrder), activeChannels(pow(order+1, 2))
+BFormatConvolution::BFormatConvolution(unsigned order, unsigned maxOrder) : activeChannels(pow(order+1, 2)), maxOrder(maxOrder)
 {
     Convolution::NonUniform headSize;
     headSize.headSizeInSamples = 1024;
