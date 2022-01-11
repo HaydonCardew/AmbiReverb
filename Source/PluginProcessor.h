@@ -92,7 +92,6 @@ private:
     
     bool loadedImpulseResponse;
     float ambiOrder;
-    mutex processAudioLock;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbiReverbAudioProcessor)
 };

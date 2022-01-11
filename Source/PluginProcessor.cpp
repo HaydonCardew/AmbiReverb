@@ -43,7 +43,7 @@ void AmbiReverbAudioProcessor::updateAmbisonicOrder(bool forceRefresh)
         return;
     }
     ambiOrder = *newAmbiOrder;
-    lock_guard<mutex> guard (processAudioLock);
+    ScopedLock lock{ getCallbackLock() };
     decodingMatrix = configList.getDecodingCoefs(currentConfigIndex, ambiOrder);
     bFormatChunk.resize(numberOfBFormatChannels(), vector<float>(processBlockSize)); // allow these to change in realtime?
     for (auto & conv : convolution)
@@ -196,7 +196,7 @@ void AmbiReverbAudioProcessor::setPFormatConfig(int configIndex)
     }
     loadedImpulseResponse = false;
     currentConfigIndex = configIndex;
-    lock_guard<mutex> guard (processAudioLock);
+    ScopedLock lock{ getCallbackLock() };
     decodingMatrix = configList.getDecodingCoefs (currentConfigIndex, ambiOrder);
     for (auto & conv : convolution)
     {
@@ -230,8 +230,6 @@ void AmbiReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     }
     
     inputBuffer.write(buffer.getArrayOfReadPointers(), buffer.getNumChannels(), buffer.getNumSamples());
-    
-    lock_guard<mutex> guard(processAudioLock); // a lock in audio thread is possibly stupid?
     
     if (inputBuffer.size() >= processBlockSize)
     {
